@@ -1,0 +1,47 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+@import '~./tabs/electron-tabs.css';
+
+.block {
+  display: block;
+  height: 100px;
+  width: 100px;
+  background-color: blue;
+}
+
+.etabs-tabgroup {
+  display: flex;
+}
+.etabs-tab-title {
+  margin-left: 10px;
+  max-width: 120px;
+  overflow: hidden;
+  white-space: pre;
+  text-overflow: ellipsis;
+  margin-right: 22px;
+}
+.etabs-tabs {
+  display: flex;
+  max-width: calc(100% - 200px);
+}
+.etabs-tab {
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-grow: 1;
+  position: relative;
+}
+.etabs-tab-buttons {
+  right: 8px;
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 9px;
+}
+.etabs-tab-icon {
+  height: 16px;
+  width: 16px;
+  display: inline-flex;
+}

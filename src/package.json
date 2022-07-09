@@ -1,0 +1,20 @@
+{
+  "name": "bedrock",
+  "productName": "bedrock-app",
+  "version": "0.0.3",
+  "description": "Bedrock App",
+  "main": "./main.prod.js",
+  "author": {
+    "name": "Bedrock",
+    "email": "brian.joseff@bedrock.ai",
+    "url": "https://bedrock.computer"
+  },
+  "scripts": {
+    "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
+    "postinstall": "yarn electron-rebuild"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "nsfw": "^2.2.0"
+  }
+}

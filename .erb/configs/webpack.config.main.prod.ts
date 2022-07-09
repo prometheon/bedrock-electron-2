@@ -24,7 +24,7 @@ const configuration: webpack.Configuration = {
 
   entry: {
     main: path.join(webpackPaths.srcMainPath, 'main.ts'),
-    preload: path.join(webpackPaths.srcMainPath, 'preload.ts'),
+    preload: path.join(webpackPaths.srcMainPath, 'preload.js'),
   },
 
   output: {
@@ -67,7 +67,7 @@ const configuration: webpack.Configuration = {
    * https://github.com/webpack/webpack/issues/2010
    */
   node: {
-    __dirname: false,
+    __dirname: true,
     __filename: false,
   },
 };

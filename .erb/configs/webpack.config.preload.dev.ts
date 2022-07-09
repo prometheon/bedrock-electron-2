@@ -19,7 +19,7 @@ const configuration: webpack.Configuration = {
 
   target: 'electron-preload',
 
-  entry: path.join(webpackPaths.srcMainPath, 'preload.ts'),
+  entry: path.join(webpackPaths.srcMainPath, 'preload.js'),
 
   output: {
     path: webpackPaths.dllPath,
@@ -58,7 +58,7 @@ const configuration: webpack.Configuration = {
    * https://github.com/webpack/webpack/issues/2010
    */
   node: {
-    __dirname: false,
+    __dirname: true,
     __filename: false,
   },
 
