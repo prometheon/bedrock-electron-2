@@ -17,13 +17,13 @@ import {
   // globalShortcut,
   shell,
   ipcMain,
-  BrowserView,
+  // BrowserView,
   // remote,
 } from 'electron';
 import MenuBuilder from './menu';
 // import { initDirWatcher } from '../utils/dirWatcher';
 import getBounds from '../utils/getBounds';
-import resolveHtmlPath from '../utils/resolveHtmlPath';
+// import resolveHtmlPath from '../utils/resolveHtmlPath';
 
 let newWindow: BrowserWindow | null = null;
 
@@ -39,18 +39,18 @@ if (
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
-
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload
-    )
-    .catch(console.log);
-};
+// const installExtensions = async () => {
+//   const installer = require('electron-devtools-installer');
+//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+//   const extensions = ['REACT_DEVELOPER_TOOLS'];
+//
+//   return installer
+//     .default(
+//       extensions.map((name) => installer[name]),
+//       forceDownload
+//     )
+//     .catch(console.log);
+// };
 
 const windows = new Set();
 
@@ -80,7 +80,6 @@ const createWindow = async () => {
     width: 1024,
     height: 728,
     icon: getAssetPath('icon.png'),
-    // titleBarStyle: 'hidden',
     trafficLightPosition: { x: 10, y: 16 },
     webPreferences: {
       preload: `${path.join(__dirname, './preload.js')}`,
@@ -90,37 +89,9 @@ const createWindow = async () => {
       // enableRemoteModule: true,
     },
   });
+  newWindow.maximize();
 
-  // userAgent firefox in attempt to mitigate auth issues with some web apps
-  // newWindow.loadURL(
-  //   `file://${path.resolve(__dirname, '../renderer/index.html')}`,
-  //   { userAgent: 'Firefox' }
-  // );
-  newWindow.loadURL(resolveHtmlPath('index.html'));
-  const view = new BrowserView({
-    webPreferences: {
-      webviewTag: true,
-      preload: `${path.join(__dirname, './preload.js')}`,
-      nodeIntegration: true,
-      contextIsolation: false,
-    },
-  });
-  newWindow.setBrowserView(view);
-  view.setBounds({ x: 0, y: 0, width: 1024, height: 700 });
-  view.webContents.loadURL('https://bedrock.computer');
-
-  // instantiate the main BrowserView with bedrock.computer (make this the home page?)
-  // const view = new BrowserView({
-  //   webPreferences: {
-  //     webviewTag: true
-  //   }
-  // });
-  // newWindow.setBrowserView(view);
-  // view.webContents.loadURL('https://www.bedrock.computer');
-  // view.setBounds({ x: 0, y: 32, width: 1024, height: 700 });
-  // view.setAutoResize({horizontal: true});
-  // view.webContents.loadURL('https://www.bedrock.computer');
-  // view.webContents.openDevTools({ mode: 'detach' });
+  newWindow.loadURL(process.env.BASE_URL);
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -231,7 +202,7 @@ const openNewTab = (link: string) => {
   if (newWindow) newWindow.webContents.send('open-tab', { src: link });
 };
 
-app.on('open-url', function (event, data) {
+app.on('open-url', (event, data) => {
   event.preventDefault();
   const link = data.replace('bedrock-app', 'https');
   if (newWindow) {
@@ -249,7 +220,7 @@ app.on('activate', () => {
   if (windows.size === 0) createWindow();
 });
 
-ipcMain.on('uncaughtException', function (error) {
+ipcMain.on('uncaughtException', (error) => {
   // Handle the error
   console.log('ipcMain Caught Error:', error);
 });
