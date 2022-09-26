@@ -50,6 +50,7 @@ const configuration: webpack.Configuration = {
   plugins: [
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'production',
+      BASE_URL: 'https://bedrock.computer',
     }),
   ],
 };

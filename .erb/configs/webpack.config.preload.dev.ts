@@ -45,6 +45,7 @@ const configuration: webpack.Configuration = {
      */
     new webpack.EnvironmentPlugin({
       NODE_ENV: 'development',
+      BASE_URL: 'https://bedrock.computer',
     }),
 
     new webpack.LoaderOptionsPlugin({
