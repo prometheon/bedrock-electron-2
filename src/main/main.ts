@@ -11,21 +11,11 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
-import {
-  app,
-  BrowserWindow,
-  // globalShortcut,
-  shell,
-  ipcMain,
-  // BrowserView,
-  // remote,
-} from 'electron';
+import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
 import MenuBuilder from './menu';
-// import { initDirWatcher } from '../utils/dirWatcher';
-import getBounds from '../utils/getBounds';
-// import resolveHtmlPath from '../utils/resolveHtmlPath';
+import resolveHtmlPath from '../utils/resolveHtmlPath';
 
-let newWindow: BrowserWindow | null = null;
+let win: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -36,8 +26,11 @@ if (
   process.env.NODE_ENV === 'development' ||
   process.env.DEBUG_PROD === 'true'
 ) {
-  require('electron-debug')();
+  // will do openDevTools
+  // require('electron-debug')();
 }
+
+require('@electron/remote/main').initialize();
 
 // const installExtensions = async () => {
 //   const installer = require('electron-devtools-installer');
@@ -53,6 +46,18 @@ if (
 // };
 
 const windows = new Set();
+
+function refreshViewBounds(_win, _view) {
+  const bounds = _win.getBounds();
+  const viewBounds = _view.getBounds();
+
+  _view.setBounds({
+    x: 0,
+    y: viewBounds.y,
+    width: bounds.width,
+    height: bounds.height - viewBounds.y,
+  });
+}
 
 const createWindow = async () => {
   // if (
@@ -75,84 +80,97 @@ const createWindow = async () => {
   //   const preloadPath = (process.env.NODE_ENV === 'development' || process.env.E2E_BUILD === 'true')
   // ? path.join(__dirname, './preload.js') : path.join(process.resourcesPath, 'preload.js');
 
-  newWindow = new BrowserWindow({
+  win = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
     icon: getAssetPath('icon.png'),
-    trafficLightPosition: { x: 10, y: 16 },
+    titleBarStyle: 'hidden',
+    trafficLightPosition: { x: 7, y: 9 },
     webPreferences: {
       preload: `${path.join(__dirname, './preload.js')}`,
       nodeIntegration: true,
       contextIsolation: false,
       webviewTag: true,
-      // enableRemoteModule: true,
     },
   });
-  newWindow.maximize();
+  win.maximize();
+  win.loadURL(resolveHtmlPath('index.html'));
 
-  newWindow.loadURL(process.env.BASE_URL);
+  const view = new BrowserView({
+    webPreferences: {
+      webviewTag: true,
+      preload: `${path.join(__dirname, './preload.js')}`,
+      nodeIntegration: true,
+      contextIsolation: false,
+    },
+  });
+  win.setBrowserView(view);
+
+  view.webContents.loadURL(process.env.BASE_URL);
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
-  newWindow.webContents.on('did-finish-load', () => {
-    if (!newWindow) {
-      throw new Error('"newWindow" is not defined');
+  win.webContents.on('did-finish-load', () => {
+    if (!win) {
+      throw new Error('"win" is not defined');
     }
     if (process.env.START_MINIMIZED) {
-      newWindow.minimize();
+      win.minimize();
     } else {
-      newWindow.show();
-      newWindow.focus();
+      win.show();
+      win.focus();
     }
     ipcMain.emit('window-did-finish-load', true);
     // eslint-disable-next-line promise/catch-or-return
-    // initDirWatcher(newWindow.webContents).then((w) => {
+    // initDirWatcher(win.webContents).then((w) => {
     //   return app?.on('will-quit', w.stop);
     // });
   });
 
-  newWindow.on('resize', function () {
-    if (newWindow) {
-      const newBounds = getBounds(newWindow);
-      const browserViews = newWindow?.getBrowserViews();
+  win.on('resize', () => {
+    if (win) {
+      const browserViews = win?.getBrowserViews();
+
       // set BrowserView's bounds explicitly
       browserViews?.forEach((browserView) => {
-        browserView.setBounds(newBounds);
+        refreshViewBounds(win, browserView);
       });
     }
   });
 
-  newWindow.on('closed', () => {
-    windows.delete(newWindow);
-    newWindow = null;
+  win.on('closed', () => {
+    windows.delete(win);
+    win = null;
   });
 
-  newWindow.on('focus', () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) {
-      const menuBuilder = new MenuBuilder(win);
+  win.on('focus', () => {
+    const focusedWindow = BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+      const menuBuilder = new MenuBuilder(focusedWindow);
       menuBuilder.buildMenu();
     }
   });
 
   // Open urls in the user's browser
-  newWindow.webContents.on('new-window', (event, url) => {
-    event.preventDefault();
-    shell.openExternal(url);
-  });
+  // win.webContents.on('new-window', (event, url) => {
+  //   event.preventDefault();
+  //   shell.openExternal(url);
+  // });
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   // new AppUpdater();
 
-  windows.add(newWindow);
-  return newWindow;
+  windows.add(win);
+  return win;
 };
 
 /** ***************************
  * Add event listeners...
  **************************** */
+
+app.on('browser-window-created', (_, window) => {
+  require('@electron/remote/main').enable(window.webContents);
+});
 
 app.on('window-all-closed', () => {
   // Respect the OSX convention of having the application in memory even
@@ -164,16 +182,16 @@ app.on('window-all-closed', () => {
 
 // When the last tab is closed, this event is triggered, which will close the tab window
 ipcMain.on('close-tabs-window', () => {
-  if (newWindow) newWindow.close();
+  if (win) win.close();
 });
 
 // 'open-tab' event comes from bedrock-fabric
 ipcMain.on('open-tab', (_e, args) => {
-  if (newWindow) newWindow.webContents.send('open-tab', args);
+  if (win) win.webContents.send('open-tab', args);
 });
 
 // const blockRefresh = () => {
-//   const message = () => newWindow.webContents.send('refresh-tab');
+//   const message = () => win.webContents.send('refresh-tab');
 
 //   globalShortcut.register('CommandOrControl+R', message);
 //   globalShortcut.register('CommandOrControl+Shift+R', message);
@@ -182,7 +200,7 @@ ipcMain.on('open-tab', (_e, args) => {
 // };
 
 // const blockCloseWindow = () => {
-//   const message = () => newWindow.webContents.send('close-tab');
+//   const message = () => win.webContents.send('close-tab');
 
 //   globalShortcut.register('CommandOrControl+W', message);
 //   return true;
@@ -199,13 +217,13 @@ app.whenReady().then(createWindow).catch(console.log);
 // let link;
 
 const openNewTab = (link: string) => {
-  if (newWindow) newWindow.webContents.send('open-tab', { src: link });
+  if (win) win.webContents.send('open-tab', { src: link });
 };
 
 app.on('open-url', (event, data) => {
   event.preventDefault();
   const link = data.replace('bedrock-app', 'https');
-  if (newWindow) {
+  if (win) {
     openNewTab(link);
   } else {
     ipcMain.on('window-did-finish-load', () => openNewTab(link));
