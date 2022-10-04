@@ -38,18 +38,47 @@ export default class MenuBuilder {
   }
 
   setupDevelopmentEnvironment(): void {
-    this.mainWindow.webContents.on('context-menu', (_, props) => {
+    const win = this.mainWindow;
+    const view = this.mainWindow.getBrowserView();
+
+    const onContextMenu = (event: Event, props: Electron.ContextMenuParams) => {
       const { x, y } = props;
 
-      Menu.buildFromTemplate([
-        {
-          label: 'Inspect element',
-          click: () => {
-            this.mainWindow.webContents.inspectElement(x, y);
+      // enable 'Inspect BrowserWindow element' if needed, but make sure BrowserView is not overlapping dev-tools iframe
+      const menu = [
+        // {
+        //   label: 'Inspect BrowserWindow element',
+        //   click: () => {
+        //     win.webContents.inspectElement(x, y);
+        //   },
+        // },
+      ];
+
+      if (view) {
+        menu.push(
+          {
+            label: 'Inspect element',
+            click: () => {
+              view.webContents.inspectElement(x, y);
+            },
           },
-        },
-      ]).popup({ window: this.mainWindow });
-    });
+          {
+            label: 'Reload page',
+            click: () => {
+              view.webContents.reload();
+            },
+          }
+        );
+      }
+
+      Menu.buildFromTemplate(menu).popup({ window: this.mainWindow });
+    };
+
+    win.webContents.on('context-menu', onContextMenu);
+
+    if (view) {
+      view.webContents.on('context-menu', onContextMenu);
+    }
   }
 
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
