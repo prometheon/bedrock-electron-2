@@ -9,7 +9,7 @@
     "build:renderer": "cross-env BASE_URL=https://www.bedrock.computer NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
-    "package": "rm -rf src/dist && rm src/nsfw.node && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
+    "package": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
     "package-win": "del /s /q src\\dist 2>null && del src\\nsfw.node 2>null && yarn build && electron-builder build -w --publish never",
     "prepare": "husky install",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
