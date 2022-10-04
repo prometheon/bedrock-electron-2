@@ -1,0 +1,84 @@
+/*.blueBox{*/
+/*    display:block;*/
+/*    height: 100px;*/
+/*    width: 100px;*/
+/*    background-color: blue;*/
+/*}*/
+
+.Tabs {
+  display: flex;
+  width: 100%;
+  padding-left: 70px;
+  overflow: hidden;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+
+.Tab {
+  width: auto;
+  flex-grow: 1;
+  height: 30px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-left: 1px solid gray;
+  border-right: 1px solid gray;
+  border-bottom: 1px solid gray;
+  margin-right: -1px;
+  /*border-top-right-radius: 8px;*/
+  /*border-top-left-radius: 8px;*/
+  position: relative;
+  background: #ccc;
+  color: #444;
+  min-width: 100px;
+  display: flex;
+  flex-direction: row;
+}
+
+.Tab:last-child {
+  margin-right: 0;
+  border-right: none;
+}
+
+.TabIcon {
+  width: 28px;
+  height: 28px;
+  margin: 1px;
+}
+
+.TabTitle {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 7px;
+  user-select: none;
+  flex-grow: 1;
+}
+
+.TabClose {
+  padding: 7px;
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  line-height: 16px;
+  user-select: none;
+  text-align: center;
+}
+
+.TabActive {
+  background: #fff;
+  color: #000;
+}
+
+.TabSingle {
+  border: none;
+  background: #fff;
+  color: #000;
+}
+
+.TabSingle .TabTitle {
+  text-align: center;
+}
+.TabSingle .TabClose {
+  display: none;
+}

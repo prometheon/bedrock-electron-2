@@ -7,7 +7,7 @@ export default (window: BrowserWindow) => {
   // Temporary hack to fix Windows 10 browser window sizing issues until Electron is fixed
   let windowsWidthOffset = 0;
   let windowsHeightOffset = 0;
-  if (os.platform() == 'win32' && os.release().startsWith('10.')) {
+  if (os.platform() === 'win32' && os.release().startsWith('10.')) {
     windowsWidthOffset = 15;
     windowsHeightOffset = 58;
   }

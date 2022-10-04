@@ -1,8 +1,5 @@
 import React from 'react';
-import { remote } from 'electron';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-// import Tabs from './tabs';
-import './App.global.css';
+import Tabs from './components/Tabs/Tabs';
 
 // const handleDoubleClick = () => {
 //   // Solution from: https://github.com/electron/electron/issues/16385#issuecomment-653952292
@@ -24,7 +21,7 @@ import './App.global.css';
 //   if (win.isMaximized()) return win.unmaximize();
 //   return win.maximize();
 // };
-
+//
 // const Browser = () => {
 //   return (
 //     <div>
@@ -33,21 +30,11 @@ import './App.global.css';
 //         <div className="etabs-buttons" />
 //       </div>
 //       <div className="etabs-views" />
-//       {/* <Tabs /> */}
+//       <Tabs />
 //     </div>
 //   );
 // };
 
 export default function App() {
-  return (
-    <span />
-    // <Browser />
-    // <Router>
-    //   <Routes>
-    //     <Switch>
-    //       <Route path="/" component={Browser} />
-    //     </Switch>
-    //   </Routes>
-    // </Router>
-  );
+  return <Tabs />;
 }
