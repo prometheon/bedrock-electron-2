@@ -36,6 +36,19 @@
   flex-direction: row;
 }
 
+.BackButton {
+  user-select: none;
+  padding: 0 8px;
+  line-height: 30px;
+  border-radius: 4px;
+  color: #222;
+}
+
+.BackButton:hover,
+.BackButton:active {
+  background: #eee;
+}
+
 .Tab:last-child {
   margin-right: 0;
   border-right: none;
@@ -72,7 +85,7 @@
 
 .TabSingle {
   border: none;
-  background: #fff;
+  background: transparent;
   color: #000;
 }
 
