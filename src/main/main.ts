@@ -85,11 +85,8 @@ const createWindow = async () => {
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 7, y: 6 },
     webPreferences: {
-      // preload: resolvePreloadPath(),
-      preload: `${__dirname}/preload.js`,
       nodeIntegration: true,
       contextIsolation: false,
-      webviewTag: true,
     },
   });
   win.maximize();
@@ -97,11 +94,11 @@ const createWindow = async () => {
 
   const view = new BrowserView({
     webPreferences: {
-      // preload: resolvePreloadPath(),
-      preload: `${__dirname}/preload.js`,
+      preload: path.join(__dirname, 'preload.js'),
+
       nodeIntegration: true,
-      contextIsolation: false,
-      webviewTag: true,
+      contextIsolation: true,
+      sandbox: false,
     },
   });
   win.setBrowserView(view);

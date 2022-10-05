@@ -23,16 +23,16 @@ export function getViewUrl() {
   return getViewWebContents()?.getURL() || '';
 }
 
-export function setViewTopBound(topBound = 0) {
+export function setViewTopBound(topOffset = 0, rightOffset = 0) {
   const win = getWindow();
   const view = getView();
 
   const bounds = win.getBounds();
   view?.setBounds({
     x: 0,
-    y: topBound,
-    width: bounds.width,
-    height: bounds.height - topBound,
+    y: topOffset,
+    width: bounds.width - rightOffset,
+    height: bounds.height - topOffset,
   });
 }
 

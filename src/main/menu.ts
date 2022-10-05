@@ -44,14 +44,27 @@ export default class MenuBuilder {
     const onContextMenu = (event: Event, props: Electron.ContextMenuParams) => {
       const { x, y } = props;
 
-      // enable 'Inspect BrowserWindow element' if needed, but make sure BrowserView is not overlapping dev-tools iframe
       const menu = [
-        // {
-        //   label: 'Inspect BrowserWindow element',
-        //   click: () => {
-        //     win.webContents.inspectElement(x, y);
-        //   },
-        // },
+        {
+          label: 'Inspect BrowserWindow element',
+          click: () => {
+            win.webContents.inspectElement(x, y);
+
+            if (!view) {
+              return;
+            }
+
+            const bounds = win.getBounds();
+            const viewBounds = view?.getBounds();
+
+            view.setBounds({
+              x: 0,
+              y: viewBounds.y,
+              width: bounds.width - 700,
+              height: bounds.height - viewBounds.y,
+            });
+          },
+        },
       ];
 
       if (view) {

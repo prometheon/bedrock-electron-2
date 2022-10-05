@@ -18,8 +18,6 @@ To package apps for the local platform:
 
     yarn package
 
-To enable "Inspect element" context menu, run
+To enable "Inspect element" and "Refresh page" context menu, make prod-ready app to launch right after build, run this command instead
 
-    DEBUG_PROD=true yarn package
-
-Then, after build is done, go to `release/build` directory and install suitable app-file
+    yarn package-debug-mac
