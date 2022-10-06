@@ -156,6 +156,16 @@ function Tabs() {
     });
   };
 
+  const onInputChange = (event) => {
+    const webContents = getViewWebContents();
+
+    if (!webContents) {
+      return;
+    }
+
+    webContents.loadURL(event.target.value);
+  };
+
   const onClick = (event: Event, index: number) => {
     setActiveTab(tabs[index]);
   };
@@ -187,6 +197,14 @@ function Tabs() {
             ⬅
           </div>
         ) : null}
+
+        <div
+          className={styles.BackButton}
+          onClick={onBack}
+          title="Go Back to the previous page"
+        >
+          <input onChange={onInputChange} />
+        </div>
 
         {tabs.map((tab, index) => (
           <div
