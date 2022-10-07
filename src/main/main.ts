@@ -213,18 +213,22 @@ app.whenReady().then(createWindow).catch(console.log);
 
 // let link;
 
-const openNewTab = (link: string) => {
-  if (win) win.webContents.send('open-tab', { src: link });
-};
+// const openNewTab = (link: string) => {
+//   if (win) win.webContents.send('open-tab', { src: link });
+// };
 
 app.on('open-url', (event, data) => {
   event.preventDefault();
   const link = data.replace('bedrock-app', 'https');
-  if (win) {
-    openNewTab(link);
-  } else {
-    ipcMain.on('window-did-finish-load', () => openNewTab(link));
-  }
+  // if (win) {
+  //   openNewTab(link);
+  // } else {
+  //   ipcMain.on('window-did-finish-load', () => openNewTab(link));
+  // }
+
+  const view = win?.getBrowserViews()?.[0];
+
+  view?.webContents.loadURL(link);
 });
 
 app.setAsDefaultProtocolClient('bedrock-app');
