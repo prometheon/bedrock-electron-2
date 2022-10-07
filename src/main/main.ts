@@ -13,7 +13,7 @@ import 'regenerator-runtime/runtime';
 import path from 'path';
 import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
 import MenuBuilder from './menu';
-import { resolveHtmlPath, resolvePreloadPath } from '../utils/resolveHtmlPath';
+import { resolveHtmlPath } from '../utils/resolveHtmlPath';
 
 let win: BrowserWindow | null = null;
 
@@ -97,8 +97,7 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
 
       nodeIntegration: true,
-      contextIsolation: true,
-      sandbox: false,
+      contextIsolation: false,
     },
   });
   win.setBrowserView(view);

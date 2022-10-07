@@ -19,7 +19,7 @@ checkNodeEnv('production');
 deleteSourceMaps();
 
 const configuration: webpack.Configuration = {
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
 
   mode: 'production',
 
