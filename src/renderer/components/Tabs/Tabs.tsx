@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { shell } from 'electron';
 import {
   getViewTitle,
@@ -32,6 +38,8 @@ function Tabs() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tabsRef = useRef<any>();
   const [activeTab, setActiveTab] = useState<Tab | null>(tabs[0]);
+  const [canGoBack, setCanGoBack] = useState<boolean>(false);
+
   const updateActiveTab = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (nextTab: any) => {
@@ -75,6 +83,8 @@ function Tabs() {
     if (!webContents) {
       return;
     }
+
+    setCanGoBack(webContents.canGoBack());
 
     const onPageTitleUpdated = (event: Event, title: string) => {
       updateActiveTab({ title });
@@ -132,6 +142,20 @@ function Tabs() {
     }
   }, [tabs]);
 
+  const onBack = () => {
+    const webContents = getViewWebContents();
+
+    if (!webContents) {
+      return;
+    }
+
+    webContents.goBack();
+
+    setTimeout(() => {
+      setCanGoBack(webContents.canGoBack());
+    });
+  };
+
   const onClick = (event: Event, index: number) => {
     setActiveTab(tabs[index]);
   };
@@ -152,32 +176,44 @@ function Tabs() {
   };
 
   return (
-    <div className={styles.Tabs} ref={tabsRef}>
-      {tabs.map((tab, index) => (
-        <div
-          key={tab.createdAt}
-          className={`${styles.Tab} ${
-            tab.createdAt === activeTab?.createdAt ? styles.TabActive : ''
-          } ${tabs.length === 1 ? styles.TabSingle : ''}`}
-        >
-          {tab.icon && tabs.length > 1 ? (
-            <img src={tab.icon} className={styles.TabIcon} alt="tab-icon" />
-          ) : null}
+    <>
+      <div className={styles.Tabs} ref={tabsRef}>
+        {canGoBack && tabs.length === 1 ? (
           <div
-            className={styles.TabTitle}
-            onClick={(event) => onClick(event, index)}
+            className={styles.BackButton}
+            onClick={onBack}
+            title="Go Back to the previous page"
           >
-            {tab.title}
+            ⬅
           </div>
+        ) : null}
+
+        {tabs.map((tab, index) => (
           <div
-            className={styles.TabClose}
-            onClick={(event) => onTabCLose(event, index)}
+            key={tab.createdAt}
+            className={`${styles.Tab} ${
+              tab.createdAt === activeTab?.createdAt ? styles.TabActive : ''
+            } ${tabs.length === 1 ? styles.TabSingle : ''}`}
           >
-            ✕
+            {tab.icon && tabs.length > 1 ? (
+              <img src={tab.icon} className={styles.TabIcon} alt="tab-icon" />
+            ) : null}
+            <div
+              className={styles.TabTitle}
+              onClick={(event) => onClick(event, index)}
+            >
+              {tab.title}
+            </div>
+            <div
+              className={styles.TabClose}
+              onClick={(event) => onTabCLose(event, index)}
+            >
+              ✕
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }
 

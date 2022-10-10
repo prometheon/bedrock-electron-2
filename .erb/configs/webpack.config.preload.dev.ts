@@ -24,6 +24,9 @@ const configuration: webpack.Configuration = {
   output: {
     path: webpackPaths.dllPath,
     filename: 'preload.js',
+    library: {
+      type: 'umd',
+    },
   },
 
   plugins: [
@@ -59,7 +62,7 @@ const configuration: webpack.Configuration = {
    * https://github.com/webpack/webpack/issues/2010
    */
   node: {
-    __dirname: true,
+    __dirname: false,
     __filename: false,
   },
 

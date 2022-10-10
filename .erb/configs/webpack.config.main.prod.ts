@@ -16,7 +16,7 @@ checkNodeEnv('production');
 deleteSourceMaps();
 
 const configuration: webpack.Configuration = {
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
 
   mode: 'production',
 
@@ -30,6 +30,9 @@ const configuration: webpack.Configuration = {
   output: {
     path: webpackPaths.distMainPath,
     filename: '[name].js',
+    library: {
+      type: 'umd',
+    },
   },
 
   optimization: {
@@ -68,7 +71,7 @@ const configuration: webpack.Configuration = {
    * https://github.com/webpack/webpack/issues/2010
    */
   node: {
-    __dirname: true,
+    __dirname: false,
     __filename: false,
   },
 };

@@ -38,18 +38,60 @@ export default class MenuBuilder {
   }
 
   setupDevelopmentEnvironment(): void {
-    this.mainWindow.webContents.on('context-menu', (_, props) => {
+    const win = this.mainWindow;
+    const view = this.mainWindow.getBrowserView();
+
+    const onContextMenu = (event: Event, props: Electron.ContextMenuParams) => {
       const { x, y } = props;
 
-      Menu.buildFromTemplate([
+      const menu = [
         {
-          label: 'Inspect element',
+          label: 'Inspect BrowserWindow element',
           click: () => {
-            this.mainWindow.webContents.inspectElement(x, y);
+            win.webContents.inspectElement(x, y);
+
+            if (!view) {
+              return;
+            }
+
+            const bounds = win.getBounds();
+            const viewBounds = view?.getBounds();
+
+            view.setBounds({
+              x: 0,
+              y: viewBounds.y,
+              width: bounds.width - 700,
+              height: bounds.height - viewBounds.y,
+            });
           },
         },
-      ]).popup({ window: this.mainWindow });
-    });
+      ];
+
+      if (view) {
+        menu.push(
+          {
+            label: 'Inspect element',
+            click: () => {
+              view.webContents.inspectElement(x, y);
+            },
+          },
+          {
+            label: 'Reload page',
+            click: () => {
+              view.webContents.reload();
+            },
+          }
+        );
+      }
+
+      Menu.buildFromTemplate(menu).popup({ window: this.mainWindow });
+    };
+
+    win.webContents.on('context-menu', onContextMenu);
+
+    if (view) {
+      view.webContents.on('context-menu', onContextMenu);
+    }
   }
 
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
