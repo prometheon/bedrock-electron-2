@@ -98,6 +98,7 @@ const createWindow = async () => {
 
       nodeIntegration: true,
       contextIsolation: false,
+      webviewTag: true,
     },
   });
   win.setBrowserView(view);
