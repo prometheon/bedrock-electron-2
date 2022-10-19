@@ -85,6 +85,8 @@ const createWindow = async () => {
     titleBarStyle: 'hidden',
     trafficLightPosition: { x: 7, y: 6 },
     webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+
       nodeIntegration: true,
       contextIsolation: false,
     },
@@ -157,6 +159,10 @@ const createWindow = async () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   // new AppUpdater();
+
+  ipcMain.on('bedrock-event-signOut', () => {
+    win?.webContents.send('bedrock-event-signOut');
+  });
 
   windows.add(win);
   return win;
