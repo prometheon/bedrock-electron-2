@@ -1,12 +1,12 @@
 {
-  "name": "electron-react-boilerplate",
+  "name": "bedrock",
   "version": "1.0.0",
-  "description": "A foundation for scalable desktop apps",
+  "description": "Bedrock App",
   "license": "MIT",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://github.com/electron-react-boilerplate"
+    "name": "Bedrock",
+    "email": "brian.joseff@bedrock.ai",
+    "url": "https://bedrock.computer"
   },
   "main": "./dist/main/main.js",
   "scripts": {
