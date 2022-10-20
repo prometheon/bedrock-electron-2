@@ -12,6 +12,11 @@ Start the app in the `development` environment:
 
     yarn start
 
+## Create a new icon from PNG template
+
+Prepare big PNG-icon, at least 1024x1024, make sure there is approx 5% of transparent offset from the edges, so the icon will fit properly on Macs.
+Then use https://www.npmjs.com/package/electron-icon-maker to compile new set of icons and place them to `./assets` dir in this repo.
+
 ## Packaging for Production
 
 To package apps for the local platform:
