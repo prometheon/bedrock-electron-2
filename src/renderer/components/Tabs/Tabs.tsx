@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { shell } from 'electron';
 import {
   getViewTitle,
@@ -43,31 +37,50 @@ function Tabs() {
   const updateActiveTab = useCallback(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (nextTab: any) => {
-      if (!activeTab) {
-        return;
-      }
-
       setActiveTab((currentActiveTab) => {
+        if (!currentActiveTab) {
+          return null;
+        }
+
         const nextActiveTab: Tab = {
           ...currentActiveTab,
           ...nextTab,
         };
 
-        const activeTabIndex = tabs.findIndex(
-          (tab) => tab.createdAt === activeTab.createdAt
-        );
+        setTabs((prevTabs) => {
+          const activeTabIndex = prevTabs.findIndex(
+            (tab) => tab.createdAt === currentActiveTab.createdAt
+          );
 
-        setTabs([
-          ...tabs.slice(0, activeTabIndex),
-          nextActiveTab,
-          ...tabs.slice(activeTabIndex + 1),
-        ]);
+          return [
+            ...prevTabs.slice(0, activeTabIndex),
+            nextActiveTab,
+            ...prevTabs.slice(activeTabIndex + 1),
+          ];
+        });
 
         return nextActiveTab;
       });
     },
-    [activeTab, tabs]
+    []
   );
+
+  useEffect(() => {
+    const onBedrockEventSignOut = () => {
+      if (activeTab) {
+        setTabs(() => [activeTab]);
+      }
+    };
+
+    window.addElectronListener('bedrock-event-signOut', onBedrockEventSignOut);
+
+    return () => {
+      window.removeElectronListener(
+        'bedrock-event-signOut',
+        onBedrockEventSignOut
+      );
+    };
+  }, [activeTab]);
 
   useEffect(() => {
     if (!activeTab?.url) {
@@ -132,7 +145,7 @@ function Tabs() {
       webContents.off('page-favicon-updated', onPageFavIconUpdated);
       webContents.off('did-navigate-in-page', onPageUrlUpdated);
     };
-  }, [tabs, updateActiveTab]);
+  }, [activeTab, tabs, updateActiveTab]);
 
   useEffect(() => {
     if (tabsRef.current) {

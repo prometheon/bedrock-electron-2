@@ -1,4 +1,17 @@
 declare global {
+  interface Window {
+    sendToElectron: (channelName: string, params?: any) => void;
+    addElectronListener: (
+      channelName: string,
+      cb: (e: Event, data: any) => void
+    ) => void;
+    removeElectronListener: (
+      channelName: string,
+      cb: (e: Event, data: any) => void
+    ) => void;
+    homedir: string;
+  }
+
   namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'development' | 'production';
