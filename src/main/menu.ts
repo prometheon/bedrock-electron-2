@@ -5,6 +5,7 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
+import BASE_URL from '../utils/base_url';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -23,7 +24,7 @@ export default class MenuBuilder {
       process.env.NODE_ENV === 'development' ||
       process.env.DEBUG_PROD === 'true'
     ) {
-      this.setupDevelopmentEnvironment();
+      this.setupContextMenu();
     }
 
     const template =
@@ -37,42 +38,21 @@ export default class MenuBuilder {
     return menu;
   }
 
-  setupDevelopmentEnvironment(): void {
+  setupContextMenu(): void {
     const win = this.mainWindow;
     const view = this.mainWindow.getBrowserView();
 
     const onContextMenu = (event: Event, props: Electron.ContextMenuParams) => {
       const { x, y } = props;
 
-      const menu = [
-        {
-          label: 'Inspect BrowserWindow element',
-          click: () => {
-            win.webContents.inspectElement(x, y);
-
-            if (!view) {
-              return;
-            }
-
-            const bounds = win.getBounds();
-            const viewBounds = view?.getBounds();
-
-            view.setBounds({
-              x: 0,
-              y: viewBounds.y,
-              width: bounds.width - 700,
-              height: bounds.height - viewBounds.y,
-            });
-          },
-        },
-      ];
+      const menu = [];
 
       if (view) {
         menu.push(
           {
-            label: 'Inspect element',
+            label: 'Go Home',
             click: () => {
-              view.webContents.inspectElement(x, y);
+              view.webContents.loadURL(`${BASE_URL}/finder`);
             },
           },
           {
@@ -82,6 +62,71 @@ export default class MenuBuilder {
             },
           }
         );
+      }
+
+      if (
+        process.env.NODE_ENV === 'development' ||
+        process.env.DEBUG_PROD === 'true'
+      ) {
+        menu.push(
+          { type: 'separator' },
+          {
+            label: 'Inspect Tabs',
+            click: () => {
+              win.webContents.inspectElement(x, y);
+
+              if (!view) {
+                return;
+              }
+
+              const bounds = win.getBounds();
+              const viewBounds = view?.getBounds();
+
+              view.setBounds({
+                x: 0,
+                y: viewBounds.y,
+                width: bounds.width - 700,
+                height: bounds.height - viewBounds.y,
+              });
+            },
+          }
+        );
+
+        if (view) {
+          menu.push(
+            {
+              label: 'Inspect element',
+              click: () => {
+                view.webContents.inspectElement(x, y);
+              },
+            },
+            {
+              label: 'Shift view to the bottom',
+              click: () => {
+                if (!view) {
+                  return;
+                }
+
+                const bounds = win.getBounds();
+
+                view.setBounds({
+                  x: 0,
+                  y: Math.ceil(bounds.height / 2),
+                  width: bounds.width,
+                  height: Math.floor(bounds.height / 2),
+                });
+              },
+            },
+            {
+              label: 'Clear cache, cookies and reload',
+              click: () => {
+                view.webContents.reload();
+                view.webContents.session.clearStorageData();
+                view.webContents.loadURL(`${BASE_URL}/finder`);
+              },
+            }
+          );
+        }
       }
 
       Menu.buildFromTemplate(menu).popup({ window: this.mainWindow });
