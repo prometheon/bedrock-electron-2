@@ -21,8 +21,6 @@ function getTimestamp() {
   return new Date().getTime();
 }
 
-let failedSetSIDCount = 0;
-
 function Tabs() {
   const [tabs, setTabs] = useState<Tab[]>([
     {
@@ -117,29 +115,22 @@ function Tabs() {
       });
     };
 
-    const onPageFinishLoad = () => {
-      const url = getViewUrl();
-
-      if (url === 'https://accounts.google.com.sg/accounts/SetSID') {
-        failedSetSIDCount += 1;
-      }
-
-      if (
-        failedSetSIDCount >= 2 &&
-        url === 'https://accounts.google.com.sg/accounts/SetSID'
-      ) {
+    const onPageDidNavigate = (
+      event: Event,
+      url: string,
+      httpResponseCode: number
+    ) => {
+      if (url.includes('/accounts/SetSID?') && httpResponseCode === 400) {
         // workaround of weird error with "Login with Google" leading to the broken page
         // we do redirect only on second hit of this page, otherwise login will not be successful
-        webContents.stop();
         webContents.loadURL(`${BASE_URL}/finder`);
-        failedSetSIDCount = 0;
       }
     };
 
     webContents.on('page-title-updated', onPageTitleUpdated);
     webContents.on('page-favicon-updated', onPageFavIconUpdated);
     webContents.on('did-navigate-in-page', onPageUrlUpdated);
-    webContents.on('did-finish-load', onPageFinishLoad);
+    webContents.on('did-navigate', onPageDidNavigate);
 
     webContents.setWindowOpenHandler(({ url }: { url: string }) => {
       if (url.startsWith(BASE_URL)) {
@@ -166,7 +157,7 @@ function Tabs() {
       webContents.off('page-title-updated', onPageTitleUpdated);
       webContents.off('page-favicon-updated', onPageFavIconUpdated);
       webContents.off('did-navigate-in-page', onPageUrlUpdated);
-      webContents.off('did-finish-load', onPageFinishLoad);
+      webContents.off('did-navigate', onPageDidNavigate);
     };
   }, [activeTab, tabs, updateActiveTab]);
 
