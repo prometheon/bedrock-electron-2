@@ -69,6 +69,13 @@ function Tabs() {
     const onBedrockEventSignOut = () => {
       if (activeTab) {
         setTabs(() => [activeTab]);
+
+        const webContents = getViewWebContents();
+
+        if (webContents) {
+          webContents.session.clearStorageData();
+          webContents.loadURL(`${BASE_URL}/finder`);
+        }
       }
     };
 
@@ -120,7 +127,7 @@ function Tabs() {
       url: string,
       httpResponseCode: number
     ) => {
-      if (url.includes('/accounts/SetSID?') && httpResponseCode === 400) {
+      if (url.includes('/accounts/SetSID') && httpResponseCode === 400) {
         // workaround of weird error with "Login with Google" leading to the broken page
         // we do redirect only on second hit of this page, otherwise login will not be successful
         webContents.loadURL(`${BASE_URL}/finder`);
