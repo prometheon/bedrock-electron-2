@@ -23,6 +23,16 @@ To package apps for the local platform:
 
     yarn package
 
-To enable "Inspect element" and "Refresh page" context menu, make prod-ready app to launch right after build, run this command instead
+Or for windows
 
-    yarn package-debug-mac
+    yarn package-win
+
+After that, go to `./release/build` and find your package/app to run/setup
+
+---
+
+To enable debug only context menu items in prod-build, run this command instead:
+
+- For Mac with Intel chip `yarn package-debug-mac`
+- For Mac with M1 chip `yarn package-debug-mac-m1`
+- For Windows `yarn package-debug-win`. Then run `./release/build/Bedrock Setup x.x.x.exe` to start the setup
