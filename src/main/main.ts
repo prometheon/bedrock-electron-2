@@ -11,6 +11,7 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
+import os from 'os';
 import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from '../utils/resolveHtmlPath';
@@ -50,10 +51,12 @@ function refreshViewBounds(_win, _view) {
   const bounds = _win.getBounds();
   const viewBounds = _view.getBounds();
 
+  const widthOffset = os.platform() === 'win32' && _win.isMaximized() ? 12 : 0;
+
   _view.setBounds({
     x: 0,
     y: viewBounds.y,
-    width: bounds.width,
+    width: bounds.width - widthOffset,
     height: bounds.height - viewBounds.y,
   });
 }
@@ -140,6 +143,14 @@ const createWindow = async () => {
   win.on('closed', () => {
     windows.delete(win);
     win = null;
+  });
+
+  win.on('show', () => {
+    setTimeout(() => {
+      win?.focus();
+      const [browserView] = win?.getBrowserViews() || [];
+      browserView?.webContents?.focus();
+    }, 200);
   });
 
   win.on('focus', () => {

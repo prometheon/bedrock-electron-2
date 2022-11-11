@@ -10,6 +10,7 @@ declare global {
       cb: (e: Event, data: any) => void
     ) => void;
     homedir: string;
+    platform: { isMac: boolean; isLinux: boolean; isWindows: boolean };
   }
 
   namespace NodeJS {
