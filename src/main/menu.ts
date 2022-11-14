@@ -120,7 +120,6 @@ export default class MenuBuilder {
             {
               label: 'Clear cache, cookies and reload',
               click: () => {
-                view.webContents.reload();
                 view.webContents.session.clearStorageData();
                 view.webContents.loadURL(`${BASE_URL}/finder`);
               },

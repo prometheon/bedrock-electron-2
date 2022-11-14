@@ -6,8 +6,13 @@ import {
   getViewWebContents,
   setViewTopBound,
   viewRouterPush,
+  getWindow,
 } from '../../../utils/windowUtils';
 import BASE_URL from '../../../utils/base_url';
+import minimizeIcon from './minimize.png';
+import maximizeIcon from './maximize.png';
+import closeIcon from './close.png';
+
 import styles from './Tabs.module.css';
 
 interface Tab {
@@ -190,7 +195,7 @@ function Tabs() {
     });
   };
 
-  const onClick = (event: Event, index: number) => {
+  const onTabClick = (event: Event, index: number) => {
     setActiveTab(tabs[index]);
   };
 
@@ -209,9 +214,32 @@ function Tabs() {
     setTabs(currentTabs);
   };
 
+  const onMinimize = () => {
+    getWindow().minimize();
+  };
+
+  const onMaximize = () => {
+    const win = getWindow();
+
+    if (win.isMaximized()) {
+      win.unmaximize();
+    } else {
+      win.maximize();
+    }
+  };
+
+  const onClose = () => {
+    getWindow().close();
+  };
+
   return (
     <>
-      <div className={styles.Tabs} ref={tabsRef}>
+      <div
+        className={`${styles.Tabs} ${
+          window.platform.isMac ? styles.TabsPlatformMac : ''
+        } ${window.platform.isWindows ? styles.TabsPlatformWindows : ''}`}
+        ref={tabsRef}
+      >
         {canGoBack && tabs.length === 1 ? (
           <div
             className={styles.BackButton}
@@ -234,7 +262,7 @@ function Tabs() {
             ) : null}
             <div
               className={styles.TabTitle}
-              onClick={(event) => onClick(event, index)}
+              onClick={(event) => onTabClick(event, index)}
             >
               {tab.title}
             </div>
@@ -246,6 +274,20 @@ function Tabs() {
             </div>
           </div>
         ))}
+
+        {window.platform.isWindows && (
+          <div className={styles.WindowsControls}>
+            <button type="button" onClick={onMinimize}>
+              <img src={minimizeIcon} alt="" />
+            </button>
+            <button type="button" onClick={onMaximize}>
+              <img src={maximizeIcon} alt="" />
+            </button>
+            <button type="button" onClick={onClose}>
+              <img src={closeIcon} alt="" />
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

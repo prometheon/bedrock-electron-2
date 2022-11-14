@@ -1,7 +1,13 @@
 const { ipcRenderer } = require('electron');
+const os = require('os');
 
 window.dirEventsChannelName = 'dir-watcher';
-window.homedir = require('os').homedir().replaceAll('\\', '/');
+window.homedir = os.homedir().replaceAll('\\', '/');
+window.platform = {
+  isMac: os.platform() === 'darwin',
+  isWindows: os.platform() === 'win32',
+  isLinux: os.platform() === 'linux',
+};
 
 // ipc guide
 // https://www.electronjs.org/docs/latest/api/ipc-main
