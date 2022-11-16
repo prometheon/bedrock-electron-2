@@ -264,7 +264,7 @@ function Tabs() {
               className={styles.TabTitle}
               onClick={(event) => onTabClick(event, index)}
             >
-              {tab.title}
+              {tabs.length > 1 ? tab.title : ''}
             </div>
             <div
               className={styles.TabClose}
