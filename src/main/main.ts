@@ -160,6 +160,12 @@ const createWindow = async () => {
       const menuBuilder = new MenuBuilder(focusedWindow);
       menuBuilder.buildMenu();
     }
+
+    setTimeout(() => {
+      win?.focus();
+      const [browserView] = win?.getBrowserViews() || [];
+      browserView?.webContents?.focus();
+    }, 200);
   });
 
   // Open urls in the user's browser

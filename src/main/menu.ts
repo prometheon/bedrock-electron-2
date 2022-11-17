@@ -50,6 +50,12 @@ export default class MenuBuilder {
       if (view) {
         menu.push(
           {
+            label: 'Inspect',
+            click: () => {
+              view.webContents.inspectElement(x, y);
+            },
+          },
+          {
             label: 'Go Home',
             click: () => {
               view.webContents.loadURL(`${BASE_URL}/finder`);
@@ -71,52 +77,32 @@ export default class MenuBuilder {
         menu.push(
           { type: 'separator' },
           {
-            label: 'Inspect Tabs',
+            label: 'Open devTools for Tabs',
             click: () => {
-              win.webContents.inspectElement(x, y);
-
-              if (!view) {
-                return;
-              }
-
-              const bounds = win.getBounds();
-              const viewBounds = view?.getBounds();
-
-              view.setBounds({
-                x: 0,
-                y: viewBounds.y,
-                width: bounds.width - 700,
-                height: bounds.height - viewBounds.y,
-              });
+              win.webContents.openDevTools({ mode: 'detach' });
             },
           }
         );
 
         if (view) {
           menu.push(
-            {
-              label: 'Inspect element',
-              click: () => {
-                view.webContents.inspectElement(x, y);
-              },
-            },
-            {
-              label: 'Shift view to the bottom',
-              click: () => {
-                if (!view) {
-                  return;
-                }
-
-                const bounds = win.getBounds();
-
-                view.setBounds({
-                  x: 0,
-                  y: Math.ceil(bounds.height / 2),
-                  width: bounds.width,
-                  height: Math.floor(bounds.height / 2),
-                });
-              },
-            },
+            // {
+            //   label: 'Shift view to the bottom',
+            //   click: () => {
+            //     if (!view) {
+            //       return;
+            //     }
+            //
+            //     const bounds = win.getBounds();
+            //
+            //     view.setBounds({
+            //       x: 0,
+            //       y: Math.ceil(bounds.height / 2),
+            //       width: bounds.width,
+            //       height: Math.floor(bounds.height / 2),
+            //     });
+            //   },
+            // },
             {
               label: 'Clear cache, cookies and reload',
               click: () => {
