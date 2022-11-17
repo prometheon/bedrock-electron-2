@@ -52,12 +52,13 @@ function refreshViewBounds(_win, _view) {
   const viewBounds = _view.getBounds();
 
   const widthOffset = os.platform() === 'win32' && _win.isMaximized() ? 12 : 0;
+  const heightOffset = os.platform() === 'win32' && _win.isMaximized() ? 12 : 0;
 
   _view.setBounds({
     x: 0,
     y: viewBounds.y,
     width: bounds.width - widthOffset,
-    height: bounds.height - viewBounds.y,
+    height: bounds.height - viewBounds.y - heightOffset,
   });
 }
 
