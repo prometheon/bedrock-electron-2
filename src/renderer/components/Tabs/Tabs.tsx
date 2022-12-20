@@ -11,6 +11,7 @@ import {
 import BASE_URL from '../../../utils/base_url';
 import minimizeIcon from './minimize.png';
 import maximizeIcon from './maximize.png';
+import restoreIcon from './restore.png';
 import closeIcon from './close.png';
 
 import styles from './Tabs.module.css';
@@ -218,6 +219,10 @@ function Tabs() {
     getWindow().minimize();
   };
 
+  const isMaximized = () => {
+    return getWindow().isMaximized();
+  };
+
   const onMaximize = () => {
     const win = getWindow();
 
@@ -281,7 +286,7 @@ function Tabs() {
               <img src={minimizeIcon} alt="" />
             </button>
             <button type="button" onClick={onMaximize}>
-              <img src={maximizeIcon} alt="" />
+              <img src={isMaximized() ? restoreIcon : maximizeIcon} alt="" />
             </button>
             <button type="button" onClick={onClose}>
               <img src={closeIcon} alt="" />

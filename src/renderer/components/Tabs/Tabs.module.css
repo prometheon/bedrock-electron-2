@@ -114,6 +114,7 @@
   padding: 8px;
   border: none;
   background: white;
+  outline: none;
 }
 
 .WindowsControls button:hover {
@@ -122,5 +123,5 @@
 }
 
 .WindowsControls img {
-  height: 14px;
+  height: 10px;
 }

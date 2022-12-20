@@ -15,6 +15,12 @@ import os from 'os';
 import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from '../utils/resolveHtmlPath';
+import {
+  WIN_10_BOUNDS_OFFSET_MAXIMIZED,
+  WIN_10_BOUNDS_OFFSET_NORMAL,
+  WIN_11_BOUNDS_OFFSET_MAXIMIZED,
+  WIN_11_BOUNDS_OFFSET_NORMAL,
+} from '../constants';
 
 let win: BrowserWindow | null = null;
 
@@ -51,14 +57,23 @@ function refreshViewBounds(_win, _view) {
   const bounds = _win.getBounds();
   const viewBounds = _view.getBounds();
 
-  const widthOffset = os.platform() === 'win32' && _win.isMaximized() ? 12 : 0;
-  const heightOffset = os.platform() === 'win32' && _win.isMaximized() ? 12 : 0;
+  let offset = 0;
+  if (os.platform() === 'win32') {
+    // eslint-disable-next-line no-nested-ternary
+    offset = _win.isMaximized()
+      ? os.release().startsWith('10.0.22')
+        ? WIN_11_BOUNDS_OFFSET_MAXIMIZED
+        : WIN_10_BOUNDS_OFFSET_MAXIMIZED
+      : os.release().startsWith('10.0.22')
+      ? WIN_11_BOUNDS_OFFSET_NORMAL
+      : WIN_10_BOUNDS_OFFSET_NORMAL;
+  }
 
   _view.setBounds({
     x: 0,
     y: viewBounds.y,
-    width: bounds.width - widthOffset,
-    height: bounds.height - viewBounds.y - heightOffset,
+    width: bounds.width - offset,
+    height: bounds.height - viewBounds.y - offset,
   });
 }
 
