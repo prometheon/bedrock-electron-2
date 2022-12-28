@@ -1,11 +1,12 @@
-import {
-  app,
-  Menu,
-  shell,
-  BrowserWindow,
-  MenuItemConstructorOptions,
-} from 'electron';
+import { app, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron';
+import os from 'os';
 import BASE_URL from '../utils/base_url';
+import {
+  WIN_10_BOUNDS_OFFSET_MAXIMIZED,
+  WIN_10_BOUNDS_OFFSET_NORMAL,
+  WIN_11_BOUNDS_OFFSET_MAXIMIZED,
+  WIN_11_BOUNDS_OFFSET_NORMAL,
+} from '../constants';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -110,6 +111,19 @@ export default class MenuBuilder {
             },
           });
         }
+
+        menu.push(
+          {
+            label: `OS version: ${os.release()}`,
+          },
+          {
+            label: `BOUNDS: ${
+              os.release().startsWith('10.0.22')
+                ? [WIN_11_BOUNDS_OFFSET_MAXIMIZED, WIN_11_BOUNDS_OFFSET_NORMAL]
+                : [WIN_10_BOUNDS_OFFSET_MAXIMIZED, WIN_10_BOUNDS_OFFSET_NORMAL]
+            }`,
+          }
+        );
       }
 
       Menu.buildFromTemplate(menu).popup({ window: this.mainWindow });
