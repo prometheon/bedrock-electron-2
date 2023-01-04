@@ -58,6 +58,6 @@ export function setViewTopBound(topOffset = 0, rightOffset = 0) {
 export function viewRouterPush(url: string) {
   // `window.routerPush` function must be defined in `bedrock-fabric` repo
   getViewWebContents()?.executeJavaScript(
-    `window.routerPush && window.routerPush('${url}')`
+    `window.routerPush ? window.routerPush('${url}') : window.location.href = '${url}'`
   );
 }

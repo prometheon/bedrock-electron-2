@@ -124,7 +124,7 @@ const createWindow = async () => {
   });
   win.setBrowserView(view);
 
-  view.webContents.loadURL(process.env.BASE_URL);
+  view.webContents.loadURL(`${process.env.BASE_URL}/finder`);
 
   // @TODO: Use 'ready-to-show' event
   //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
@@ -218,14 +218,14 @@ app.on('window-all-closed', () => {
 });
 
 // When the last tab is closed, this event is triggered, which will close the tab window
-ipcMain.on('close-tabs-window', () => {
-  if (win) win.close();
-});
+// ipcMain.on('close-tabs-window', () => {
+//   if (win) win.close();
+// });
 
 // 'open-tab' event comes from bedrock-fabric
-ipcMain.on('open-tab', (_e, args) => {
-  if (win) win.webContents.send('open-tab', args);
-});
+// ipcMain.on('open-tab', (_e, args) => {
+//   if (win) win.webContents.send('open-tab', args);
+// });
 
 // const blockRefresh = () => {
 //   const message = () => win.webContents.send('refresh-tab');
@@ -251,24 +251,10 @@ ipcMain.on('open-tab', (_e, args) => {
 // app.whenReady().then(handleShortcuts).then(createWindow).catch(console.log);
 app.whenReady().then(createWindow).catch(console.log);
 
-// let link;
-
-// const openNewTab = (link: string) => {
-//   if (win) win.webContents.send('open-tab', { src: link });
-// };
-
-app.on('open-url', (event, data) => {
+app.on('open-url', (event, bedrockAppUrl) => {
   event.preventDefault();
-  const link = data.replace('bedrock-app', 'https');
-  // if (win) {
-  //   openNewTab(link);
-  // } else {
-  //   ipcMain.on('window-did-finish-load', () => openNewTab(link));
-  // }
-
-  const view = win?.getBrowserViews()?.[0];
-
-  view?.webContents.loadURL(link);
+  const url = bedrockAppUrl.replace('bedrock-app://', 'https://');
+  win?.webContents.send('bedrock-event-openTab', url);
 });
 
 app.setAsDefaultProtocolClient('bedrock-app');
@@ -277,6 +263,16 @@ app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (windows.size === 0) createWindow();
+});
+
+app.on('web-contents-created', (_, contents) => {
+  contents.setWindowOpenHandler(({ url }) => {
+    const { protocol } = new URL(url);
+    if (['https:', 'http:'].includes(protocol)) {
+      win?.webContents.send('bedrock-event-openTab', url);
+    }
+    return { action: 'deny' };
+  });
 });
 
 ipcMain.on('uncaughtException', (error) => {
