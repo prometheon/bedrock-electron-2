@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { shell } from 'electron';
+// import { shell } from 'electron';
 import {
   getViewTitle,
   getViewUrl,
@@ -13,6 +13,7 @@ import minimizeIcon from './minimize.png';
 import maximizeIcon from './maximize.png';
 import restoreIcon from './restore.png';
 import closeIcon from './close.png';
+import backIcon from './arrow-back.svg';
 
 import styles from './Tabs.module.css';
 
@@ -71,6 +72,25 @@ function Tabs() {
     []
   );
 
+  const openTab = useCallback(
+    ({ title = '', url = '', createdAt = getTimestamp() } = {}) => {
+      const urlDomain = url.match(/(?:https?:\/\/)*([^/]+\.[^/]+)+\/?/)?.[1];
+
+      setTabs((prevTabs) => {
+        return [
+          ...prevTabs,
+          {
+            title: title || urlDomain || '',
+            url,
+            createdAt,
+            icon: `https://icons.duckduckgo.com/ip2/${urlDomain}.ico`,
+          },
+        ];
+      });
+    },
+    []
+  );
+
   useEffect(() => {
     const onBedrockEventSignOut = () => {
       if (activeTab) {
@@ -85,15 +105,25 @@ function Tabs() {
       }
     };
 
+    const onBedrockEventOpenTab = (_event: any, url: string) => {
+      openTab({ url });
+    };
+
     window.addElectronListener('bedrock-event-signOut', onBedrockEventSignOut);
+    window.addElectronListener('bedrock-event-openTab', onBedrockEventOpenTab);
 
     return () => {
       window.removeElectronListener(
         'bedrock-event-signOut',
         onBedrockEventSignOut
       );
+
+      window.removeElectronListener(
+        'bedrock-event-openTab',
+        onBedrockEventOpenTab
+      );
     };
-  }, [activeTab]);
+  }, [openTab, activeTab]);
 
   useEffect(() => {
     if (!activeTab?.url) {
@@ -144,26 +174,6 @@ function Tabs() {
     webContents.on('page-favicon-updated', onPageFavIconUpdated);
     webContents.on('did-navigate-in-page', onPageUrlUpdated);
     webContents.on('did-navigate', onPageDidNavigate);
-
-    webContents.setWindowOpenHandler(({ url }: { url: string }) => {
-      if (url.startsWith(BASE_URL)) {
-        const newTab = {
-          title: url.replace(BASE_URL, ''),
-          url,
-          createdAt: getTimestamp(),
-        };
-
-        setTabs(() => {
-          setActiveTab(newTab);
-          return [...tabs, newTab];
-        });
-
-        return { action: 'deny' };
-      }
-
-      shell.openExternal(url);
-      return { action: 'deny' };
-    });
 
     // eslint-disable-next-line consistent-return
     return () => {
@@ -246,13 +256,14 @@ function Tabs() {
         ref={tabsRef}
       >
         {canGoBack && tabs.length === 1 ? (
-          <div
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+          <img
+            src={backIcon}
             className={styles.BackButton}
             onClick={onBack}
             title="Go Back to the previous page"
-          >
-            ⬅
-          </div>
+            alt="Go Back to the previous page"
+          />
         ) : null}
 
         {tabs.map((tab, index) => (

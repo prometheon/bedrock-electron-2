@@ -47,6 +47,8 @@
   user-select: none;
   padding: 0 8px;
   line-height: 30px;
+  width: 30px;
+  height: 30px;
   border-radius: 4px;
   color: #222;
 }
