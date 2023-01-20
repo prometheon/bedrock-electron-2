@@ -21,8 +21,9 @@ import {
   WIN_11_BOUNDS_OFFSET_MAXIMIZED,
   WIN_11_BOUNDS_OFFSET_NORMAL,
 } from '../constants';
+import BASE_URL from '../utils/base_url';
 
-let win: BrowserWindow | null = null;
+let win: BrowserWindow | undefined;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -38,29 +39,27 @@ if (
 
 require('@electron/remote/main').initialize();
 
-// const installExtensions = async () => {
-//   const installer = require('electron-devtools-installer');
-//   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-//   const extensions = ['REACT_DEVELOPER_TOOLS'];
-//
-//   return installer
-//     .default(
-//       extensions.map((name) => installer[name]),
-//       forceDownload
-//     )
-//     .catch(console.log);
-// };
+interface BrowserViewsMap {
+  [key: number]: BrowserView;
+}
 
 const windows = new Set();
+let menuBuilder: MenuBuilder | undefined;
+const browserViews: BrowserViewsMap = {};
+let lastTopBrowserView: BrowserView | null = null;
 
-function refreshViewBounds(_win, _view) {
-  const bounds = _win.getBounds();
-  const viewBounds = _view.getBounds();
+function refreshViewBounds(_win?: BrowserWindow, _view?: BrowserView) {
+  if (!_win || !_view) {
+    return;
+  }
+
+  const bounds = _win?.getBounds();
+  const viewBounds = _view?.getBounds();
 
   let offset = 0;
   if (os.platform() === 'win32') {
     // eslint-disable-next-line no-nested-ternary
-    offset = _win.isMaximized()
+    offset = _win?.isMaximized()
       ? os.release().startsWith('10.0.22')
         ? WIN_11_BOUNDS_OFFSET_MAXIMIZED
         : WIN_10_BOUNDS_OFFSET_MAXIMIZED
@@ -69,7 +68,7 @@ function refreshViewBounds(_win, _view) {
       : WIN_10_BOUNDS_OFFSET_NORMAL;
   }
 
-  _view.setBounds({
+  _view?.setBounds({
     x: 0,
     y: viewBounds.y,
     width: bounds.width - offset,
@@ -78,13 +77,6 @@ function refreshViewBounds(_win, _view) {
 }
 
 const createWindow = async () => {
-  // if (
-  //   process.env.NODE_ENV === 'development' ||
-  //   process.env.DEBUG_PROD === 'true'
-  // ) {
-  //   await installExtensions();
-  // }
-
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../assets');
@@ -93,10 +85,107 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  // const currentWindow = BrowserWindow.getFocusedWindow();
+  const createBrowserView = (
+    url: string,
+    {
+      createdAt = new Date().getTime(),
+      show = false,
+    }: { createdAt?: number; show?: boolean } = {}
+  ) => {
+    if (!win) {
+      return;
+    }
 
-  //   const preloadPath = (process.env.NODE_ENV === 'development' || process.env.E2E_BUILD === 'true')
-  // ? path.join(__dirname, './preload.js') : path.join(process.resourcesPath, 'preload.js');
+    const isBedrockUrl =
+      url.includes('localhost') || url.includes('bedrock.computer');
+
+    const webPreferences = isBedrockUrl
+      ? {
+          preload: path.join(__dirname, 'preload.js'),
+
+          nodeIntegration: true,
+          contextIsolation: false,
+          webviewTag: true,
+        }
+      : {};
+
+    const browserView = new BrowserView({ webPreferences });
+    browserView.setBackgroundColor('#ffffff');
+    browserView.webContents.loadURL(url);
+    browserViews[createdAt] = browserView;
+
+    browserView.webContents.on(
+      'page-title-updated',
+      (_event: Event, title: string) => {
+        win?.webContents.send('bedrock-event-pageTitleUpdated', {
+          createdAt,
+          title,
+        });
+      }
+    );
+
+    browserView.webContents.on(
+      'page-favicon-updated',
+      (_event: Event, favicons: string[]) => {
+        win?.webContents.send('bedrock-event-pageFaviconUpdated', {
+          createdAt,
+          icon: favicons[1] || favicons[0] || '',
+        });
+      }
+    );
+
+    browserView.webContents.on(
+      'did-navigate-in-page',
+      (_event: Event, nextUrl: string) => {
+        win?.webContents.send('bedrock-event-didNavigateInPage', {
+          createdAt,
+          url: nextUrl,
+        });
+      }
+    );
+
+    browserView.webContents.on(
+      'did-navigate',
+      (_event: Event, nextUrl: string, httpResponseCode: number) => {
+        if (
+          nextUrl &&
+          nextUrl.includes('/accounts/SetSID') &&
+          httpResponseCode === 400
+        ) {
+          // workaround of weird error with "Login with Google" leading to the broken page
+          // we do redirect only on second hit of this page, otherwise login will not be successful
+          browserView.webContents.loadURL(`${BASE_URL}/finder`);
+        }
+      }
+    );
+
+    win.addBrowserView(browserView);
+
+    if (show) {
+      lastTopBrowserView = browserView;
+      menuBuilder?.setTopBrowserView(lastTopBrowserView);
+      win.setTopBrowserView(browserView);
+    } else if (lastTopBrowserView) {
+      win.setTopBrowserView(lastTopBrowserView);
+    }
+
+    menuBuilder = new MenuBuilder({
+      mainWindow: win,
+      mainView: lastTopBrowserView,
+    });
+
+    setTimeout(() => {
+      if (!win) {
+        return;
+      }
+
+      // rebuild menu in few seconds, since some menu items are relying on settled page URL, that can be empty on the very start
+      menuBuilder = new MenuBuilder({
+        mainWindow: win,
+        mainView: lastTopBrowserView,
+      });
+    }, 5000);
+  };
 
   win = new BrowserWindow({
     show: false,
@@ -113,32 +202,13 @@ const createWindow = async () => {
   win.maximize();
   win.loadURL(resolveHtmlPath('index.html'));
 
-  const view = new BrowserView({
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-
-      nodeIntegration: true,
-      contextIsolation: false,
-      webviewTag: true,
-    },
-  });
-  win.setBrowserView(view);
-
-  view.webContents.loadURL(`${process.env.BASE_URL}/finder`);
-
-  // @TODO: Use 'ready-to-show' event
-  //        https://github.com/electron/electron/blob/master/docs/api/browser-window.md#using-ready-to-show-event
   win.webContents.on('did-finish-load', () => {
     if (!win) {
       throw new Error('"win" is not defined');
     }
-    if (process.env.START_MINIMIZED) {
-      win.minimize();
-    } else {
-      win.show();
-      win.focus();
-    }
-    ipcMain.emit('window-did-finish-load', true);
+    win.show();
+    win.focus();
+
     // eslint-disable-next-line promise/catch-or-return
     // initDirWatcher(win.webContents).then((w) => {
     //   return app?.on('will-quit', w.stop);
@@ -147,10 +217,8 @@ const createWindow = async () => {
 
   win.on('resize', () => {
     if (win) {
-      const browserViews = win?.getBrowserViews();
-
       // set BrowserView's bounds explicitly
-      browserViews?.forEach((browserView) => {
+      win?.getBrowserViews()?.forEach((browserView) => {
         refreshViewBounds(win, browserView);
       });
     }
@@ -158,7 +226,7 @@ const createWindow = async () => {
 
   win.on('closed', () => {
     windows.delete(win);
-    win = null;
+    win = undefined;
   });
 
   win.on('show', () => {
@@ -172,22 +240,16 @@ const createWindow = async () => {
   win.on('focus', () => {
     const focusedWindow = BrowserWindow.getFocusedWindow();
     if (focusedWindow) {
-      const menuBuilder = new MenuBuilder(focusedWindow);
-      menuBuilder.buildMenu();
+      menuBuilder = new MenuBuilder({
+        mainWindow: focusedWindow,
+        mainView: lastTopBrowserView,
+      });
+
+      setTimeout(() => {
+        lastTopBrowserView?.webContents.focus();
+      }, 200);
     }
-
-    setTimeout(() => {
-      win?.focus();
-      const [browserView] = win?.getBrowserViews() || [];
-      browserView?.webContents?.focus();
-    }, 200);
   });
-
-  // Open urls in the user's browser
-  // win.webContents.on('new-window', (event, url) => {
-  //   event.preventDefault();
-  //   shell.openExternal(url);
-  // });
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
@@ -196,6 +258,65 @@ const createWindow = async () => {
   ipcMain.on('bedrock-event-signOut', () => {
     win?.webContents.send('bedrock-event-signOut');
   });
+
+  ipcMain.on(
+    'bedrock-event-createBrowserView',
+    (
+      _event,
+      {
+        url,
+        createdAt,
+        show = false,
+      }: { url: string; createdAt: number; show?: boolean }
+    ) => {
+      createBrowserView(url, { createdAt, show });
+    }
+  );
+
+  ipcMain.on(
+    'bedrock-event-activateBrowserView',
+    (_event, { createdAt }: { createdAt: number }) => {
+      if (!browserViews[createdAt]) {
+        return;
+      }
+
+      win?.addBrowserView(browserViews[createdAt]);
+      win?.setTopBrowserView(browserViews[createdAt]);
+      lastTopBrowserView = browserViews[createdAt];
+      menuBuilder?.setTopBrowserView(lastTopBrowserView);
+      browserViews[createdAt].webContents.focus();
+    }
+  );
+
+  ipcMain.on(
+    'bedrock-event-removeBrowserView',
+    (
+      _event,
+      {
+        createdAt,
+        nextCreatedAt,
+      }: { createdAt: number; nextCreatedAt: number | null }
+    ) => {
+      if (!browserViews[createdAt]) {
+        return;
+      }
+
+      if (nextCreatedAt && browserViews[nextCreatedAt]) {
+        win?.addBrowserView(browserViews[nextCreatedAt]);
+        win?.setTopBrowserView(browserViews[nextCreatedAt]);
+        lastTopBrowserView = browserViews[nextCreatedAt];
+        menuBuilder?.setTopBrowserView(lastTopBrowserView);
+      }
+
+      win?.removeBrowserView(browserViews[createdAt]);
+      if (lastTopBrowserView === browserViews[createdAt]) {
+        lastTopBrowserView = null;
+        menuBuilder?.setTopBrowserView(null);
+      }
+      (browserViews[createdAt].webContents as any).destroy();
+      delete browserViews[createdAt];
+    }
+  );
 
   windows.add(win);
   return win;
@@ -217,38 +338,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-// When the last tab is closed, this event is triggered, which will close the tab window
-// ipcMain.on('close-tabs-window', () => {
-//   if (win) win.close();
-// });
-
-// 'open-tab' event comes from bedrock-fabric
-// ipcMain.on('open-tab', (_e, args) => {
-//   if (win) win.webContents.send('open-tab', args);
-// });
-
-// const blockRefresh = () => {
-//   const message = () => win.webContents.send('refresh-tab');
-
-//   globalShortcut.register('CommandOrControl+R', message);
-//   globalShortcut.register('CommandOrControl+Shift+R', message);
-//   globalShortcut.register('F5', message);
-//   return true;
-// };
-
-// const blockCloseWindow = () => {
-//   const message = () => win.webContents.send('close-tab');
-
-//   globalShortcut.register('CommandOrControl+W', message);
-//   return true;
-// };
-
-// const handleShortcuts = () => {
-//   blockRefresh();
-//   blockCloseWindow();
-// };
-
-// app.whenReady().then(handleShortcuts).then(createWindow).catch(console.log);
 app.whenReady().then(createWindow).catch(console.log);
 
 app.on('open-url', (event, bedrockAppUrl) => {
@@ -260,7 +349,7 @@ app.on('open-url', (event, bedrockAppUrl) => {
 app.setAsDefaultProtocolClient('bedrock-app');
 
 app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
+  // On macOS, it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (windows.size === 0) createWindow();
 });
