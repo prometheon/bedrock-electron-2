@@ -31,7 +31,7 @@ export function setViewsTopBound(topOffset = 0, rightOffset = 0) {
   const bounds = win.getBounds();
 
   win.getBrowserViews().forEach((view) => {
-    view?.setBounds({
+    view.setBounds({
       x: 0,
       y: topOffset,
       width: bounds.width - rightOffset - offset,

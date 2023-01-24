@@ -29,10 +29,6 @@ interface TabProps {
 
 const MIN_FULL_TAB_WIDTH = 72;
 
-function getTimestamp() {
-  return new Date().getTime();
-}
-
 function isBedrockTab(tab: Tab) {
   if (!tab) {
     return false;
@@ -109,12 +105,7 @@ function Tabs() {
 
   const openTab = useCallback(
     (
-      {
-        title = '',
-        url = '',
-        createdAt = getTimestamp(),
-        icon = undefined,
-      } = {},
+      { title = '', url = '', createdAt = Date.now(), icon = undefined } = {},
       { asFirstTab = false, asActiveTab = false } = {}
     ) => {
       const urlDomain = url.match(/(?:https?:\/\/)*([^/]+\.[^/]+)+\/?/)?.[1];

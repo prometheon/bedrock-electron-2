@@ -53,13 +53,13 @@ function refreshViewBounds(_win?: BrowserWindow, _view?: BrowserView) {
     return;
   }
 
-  const bounds = _win?.getBounds();
-  const viewBounds = _view?.getBounds();
+  const bounds = _win.getBounds();
+  const viewBounds = _view.getBounds();
 
   let offset = 0;
   if (os.platform() === 'win32') {
     // eslint-disable-next-line no-nested-ternary
-    offset = _win?.isMaximized()
+    offset = _win.isMaximized()
       ? os.release().startsWith('10.0.22')
         ? WIN_11_BOUNDS_OFFSET_MAXIMIZED
         : WIN_10_BOUNDS_OFFSET_MAXIMIZED
@@ -68,7 +68,7 @@ function refreshViewBounds(_win?: BrowserWindow, _view?: BrowserView) {
       : WIN_10_BOUNDS_OFFSET_NORMAL;
   }
 
-  _view?.setBounds({
+  _view.setBounds({
     x: 0,
     y: viewBounds.y,
     width: bounds.width - offset,
@@ -88,7 +88,7 @@ const createWindow = async () => {
   const createBrowserView = (
     url: string,
     {
-      createdAt = new Date().getTime(),
+      createdAt = Date.now(),
       show = false,
     }: { createdAt?: number; show?: boolean } = {}
   ) => {
@@ -102,7 +102,6 @@ const createWindow = async () => {
     const webPreferences = isBedrockUrl
       ? {
           preload: path.join(__dirname, 'preload.js'),
-
           nodeIntegration: true,
           contextIsolation: false,
           webviewTag: true,
@@ -194,7 +193,6 @@ const createWindow = async () => {
     trafficLightPosition: { x: 8, y: 14 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-
       nodeIntegration: true,
       contextIsolation: false,
     },
@@ -218,8 +216,8 @@ const createWindow = async () => {
   win.on('resize', () => {
     if (win) {
       // set BrowserView's bounds explicitly
-      win?.getBrowserViews()?.forEach((browserView) => {
-        refreshViewBounds(win, browserView);
+      win.getBrowserViews().forEach((view) => {
+        refreshViewBounds(win, view);
       });
     }
   });
