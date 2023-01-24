@@ -14,6 +14,7 @@
     "package-debug-mac": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package && open ./release/build/mac/Bedrock.app",
     "package-debug-mac-m1": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package && open ./release/build/mac-arm64/Bedrock.app",
     "package-debug-win": "cross-env DEBUG_PROD=true yarn build && cross-env DEBUG_PROD=true electron-builder build -w --publish never",
+    "package-all": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist && yarn build && electron-builder build --publish never && electron-builder build -w --publish never",
     "prepare": "husky install",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && yarn start:renderer",

@@ -95,7 +95,7 @@ export default class MenuBuilder {
   setupContextMenu(): () => void {
     const win = this.mainWindow;
 
-    const cleanupCalllbacks = win.getBrowserViews().map((view: BrowserView) => {
+    const cleanupCallbacks = win.getBrowserViews().map((view: BrowserView) => {
       const url = view.webContents.getURL();
       const isBedrockUrl =
         url.includes('localhost') || url.includes('bedrock.computer');
@@ -189,11 +189,17 @@ export default class MenuBuilder {
     }
 
     return () => {
-      cleanupCalllbacks.forEach((cb) => {
+      cleanupCallbacks.forEach((cb) => {
         cb();
       });
 
-      win.webContents.off('context-menu', onWindowContextMenu);
+      if (
+        !win?.isDestroyed() &&
+        win?.webContents?.off &&
+        !win?.webContents?.isDestroyed()
+      ) {
+        win.webContents.off('context-menu', onWindowContextMenu);
+      }
     };
   }
 
