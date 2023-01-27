@@ -25,7 +25,6 @@ declare global {
       APPLE_ID_PASS?: string;
       DEBUG_PROD?: 'true';
       UPGRADE_EXTENSIONS?: 'true';
-      START_MINIMIZED?: 'true';
       E2E_BUILD?: 'true';
     }
   }

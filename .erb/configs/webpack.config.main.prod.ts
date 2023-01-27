@@ -61,7 +61,6 @@ const configuration: webpack.Configuration = {
       NODE_ENV: 'production',
       BASE_URL: 'https://bedrock.computer',
       DEBUG_PROD: false,
-      START_MINIMIZED: false,
     }),
   ],
 

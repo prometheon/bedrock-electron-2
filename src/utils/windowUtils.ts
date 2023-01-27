@@ -13,26 +13,8 @@ export function getWindow(): Electron.BrowserWindow {
   return win;
 }
 
-export function getView(): Electron.BrowserView | null {
+export function setViewsTopBound(topOffset = 0, rightOffset = 0) {
   const win = getWindow();
-  return win.getBrowserView();
-}
-
-export function getViewWebContents(): Electron.WebContents | null {
-  return getView()?.webContents || null;
-}
-
-export function getViewTitle() {
-  return getViewWebContents()?.getTitle() || '';
-}
-
-export function getViewUrl() {
-  return getViewWebContents()?.getURL() || '';
-}
-
-export function setViewTopBound(topOffset = 0, rightOffset = 0) {
-  const win = getWindow();
-  const view = getView();
 
   let offset = 0;
   if (os.platform() === 'win32') {
@@ -47,17 +29,13 @@ export function setViewTopBound(topOffset = 0, rightOffset = 0) {
   }
 
   const bounds = win.getBounds();
-  view?.setBounds({
-    x: 0,
-    y: topOffset,
-    width: bounds.width - rightOffset - offset,
-    height: bounds.height - topOffset - offset,
-  });
-}
 
-export function viewRouterPush(url: string) {
-  // `window.routerPush` function must be defined in `bedrock-fabric` repo
-  getViewWebContents()?.executeJavaScript(
-    `window.routerPush ? window.routerPush('${url}') : window.location.href = '${url}'`
-  );
+  win.getBrowserViews().forEach((view) => {
+    view.setBounds({
+      x: 0,
+      y: topOffset,
+      width: bounds.width - rightOffset - offset,
+      height: bounds.height - topOffset - offset,
+    });
+  });
 }
