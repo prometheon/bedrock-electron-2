@@ -20,4 +20,4 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
-      - run: yarn package-all
+      - run: yarn package
