@@ -20,4 +20,18 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
-      - run: yarn package
+
+      - name: Codesign & Package
+        run: |
+          pwd
+          security create-keychain -p dummypassword build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p dummypassword build.keychain
+          security import ./MacOS-certificates/AppleWWDRCAG2.cer -k build.keychain -T /usr/bin/codesign
+          security import ./MacOS-certificates/developerID_application.cer -k build.keychain -T /usr/bin/codesign
+          security import ./MacOS-certificates/developerID_installer.cer -k build.keychain -T /usr/bin/codesign
+          security import ./MacOS-certificates/DeveloperIDG2CA.cer -k build.keychain -T /usr/bin/codesign
+          CSC_KEYCHAIN=build.keychain yarn package
+
+#      - run: yarn package
+

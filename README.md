@@ -39,7 +39,7 @@ Add certificates to your OS's Keychain, should be done only once per certificate
 
 ### Compile apps
 
-#### Package apps for MacOS
+#### Package apps for macOS/Windows
 
 Run:
 
@@ -52,19 +52,10 @@ During the build you should see info about certificate used for signing:
   identityHash=3EC8422AF3E49C71D4D9424388B9FAA39BC0FF6C provisioningProfile=none
 ```
 
-After that, go to `./release/build` and find your dmg-files:
+After that, go to `./release/build` and find your dmg- and exe-files:
 
 - `Bedrock-x.x.x.dmg` - for MacOS on Intel chip
 - `Bedrock-x.x.x-arm64.dmg` - for MacOS on M1 chip
-
-#### Package app for Windows
-
-Run:
-
-    yarn package-win
-
-After that, go to `./release/build` and find your setup file:
-
 - `Bedrock Setup x.x.x.exe` - for Windows
 
 ---
