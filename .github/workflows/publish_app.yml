@@ -6,7 +6,7 @@ on:
       - cicd
 
 jobs:
-  build:
+  publish_app:
     runs-on: macos-latest
 
     steps:
