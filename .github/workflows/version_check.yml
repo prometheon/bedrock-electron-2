@@ -1,7 +1,8 @@
 name: Version Check
 
 on:
-  pull_request:
+  #  pull_request:
+  push:
     branches-ignore:
       - main
 
@@ -10,9 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
       - name: Check version update
         id: check
         uses: EndBug/version-check@v2
+        with:
+          file-name: ./release/app/package.json
+          assume-same-version: new
 
       - name: Log when changed
         if: steps.check.outputs.changed == 'true'
