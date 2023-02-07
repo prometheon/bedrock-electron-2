@@ -14,24 +14,48 @@ const targetFiles = fs
   .filter((filename) => filename.endsWith('.exe') || filename.endsWith('.dmg'))
   .map((filename) => ({ filename, filepath: path.join(buildPath, filename) }));
 
-targetFiles.forEach(({ filename, filepath }) => {
-  const fileStream = fs.createReadStream(filepath);
-  fileStream.on('error', (err) => {
+Promise.all(
+  targetFiles.map(
+    ({ filename, filepath }) =>
+      new Promise((resolve, reject) => {
+        const fileStream = fs.createReadStream(filepath);
+        fileStream.on('error', (err) => {
+          // eslint-disable-next-line no-console
+          console.error(err);
+          reject(err);
+        });
+
+        const normalizedFilename = filename.replace(/\s/g, '-');
+
+        const params = {
+          Bucket: 'bedrock-apps',
+          Key: `BedrockApp/${normalizedFilename}`,
+          Body: fileStream,
+          ContentType: filename.endsWith('.exe')
+            ? 'application/x-msdownload'
+            : 'application/octet-stream',
+        };
+
+        s3.upload(params, (err, data) => {
+          if (err) {
+            // eslint-disable-next-line no-console
+            console.error(err);
+            reject(err);
+            return;
+          }
+
+          resolve(data);
+          // eslint-disable-next-line no-console
+          console.log(`File ${normalizedFilename} was uploaded successfully`);
+        });
+      })
+  )
+)
+  .then(() => {
+    // eslint-disable-next-line no-console
+    console.log('\nAll files were uploaded successfully');
+    return true;
+  })
+  .catch((err) => {
     throw err;
   });
-
-  const params = {
-    Bucket: 'bedrock-apps',
-    Key: `BedrockApp/${filename.replace(/\s/g, '-')}`,
-    Body: fileStream,
-    ContentType: filename.endsWith('.exe')
-      ? 'application/x-msdownload'
-      : 'application/octet-stream',
-  };
-
-  s3.upload(params, (err, data) => {
-    if (err) {
-      throw err;
-    }
-  });
-});
