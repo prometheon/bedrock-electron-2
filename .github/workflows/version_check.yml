@@ -1,4 +1,4 @@
-name: Version Check
+name: Version
 
 on:
   #  pull_request:
@@ -25,12 +25,17 @@ jobs:
         uses: EndBug/version-check@v2
         with:
           file-name: ./release/app/package.json
-          assume-same-version: new
+          file-url: https://raw.githubusercontent.com/prometheon/bedrock-electron-2/main/release/app/package.json
+          static-checking: localIsNew
 
-      - name: Log when changed
+      - name: Log version when it's changed
         if: steps.check.outputs.changed == 'true'
-        run: 'echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
+        run: |
+          echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"
+          exit 1
 
-      - name: Log when unchanged
+      - name: Fail job when version is unchanged
         if: steps.check.outputs.changed == 'false'
-        run: 'echo "No version change :/"'
+        run: |
+          echo "PR without version change should not be merged"
+          exit 1

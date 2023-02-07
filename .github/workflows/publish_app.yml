@@ -1,4 +1,4 @@
-name: Publish App
+name: Publish
 
 on:
   push:
