@@ -32,10 +32,9 @@ jobs:
         if: steps.check.outputs.changed == 'true'
         run: |
           echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"
-          exit 1
 
       - name: Fail job when version is unchanged
         if: steps.check.outputs.changed == 'false'
         run: |
-          echo "PR without version change should not be merged"
+          echo "App version in this branch should be newer than in 'main' branch. PRs without version change should not be merged"
           exit 1
