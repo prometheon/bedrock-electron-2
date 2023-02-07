@@ -1,4 +1,4 @@
-name: CI/CD pipeline
+name: Publish App
 
 on:
   push:
@@ -33,5 +33,8 @@ jobs:
           security import ./MacOS-certificates/DeveloperIDG2CA.cer -k build.keychain -T /usr/bin/codesign
           CSC_KEYCHAIN=build.keychain yarn package
 
-#      - run: yarn package
-
+      - name: Upload App
+        run: yarn s3-upload
+        env:
+          AWS_ID_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_ID_APP_DOWNLOADS_BUCKET }}
+          AWS_SECRET_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_SECRET_APP_DOWNLOADS_BUCKET }}
