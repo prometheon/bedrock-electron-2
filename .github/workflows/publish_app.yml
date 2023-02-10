@@ -34,14 +34,28 @@ jobs:
       - name: Codesign & Package
         run: |
           pwd
+
+          echo "Show default keychain"
+          security default-keychain
+
+          echo "Show keychains list"
+          security list-keychains
+
           echo "trying to import AppleWWDRCAG2.cer"
-          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign
+          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k System.keychain
+
           echo "trying to import developerID_application.cer"
-          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign
+          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k System.keychain
+
           echo "trying to import developerID_installer.cer"
-          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign
+          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k System.keychain
+
           echo "trying to import DeveloperIDG2CA.cer"
-          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign
+          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k System.keychain
+
+          echo "Check existing servificates"
+          security find-identity -vp codesigning
+
           yarn package
 
       - name: Upload App
