@@ -20,8 +20,6 @@ async function s3Upload() {
     .filter((file) => !file.Key.includes('-RC')) // exclude RC versions, allow to re-upload them
     .map((file) => file.Key);
 
-  console.log(`>>>> bucketContents: `, bucketContents);
-
   const buildPath = path.join(process.cwd(), 'release', 'build');
 
   const targetFiles = fs
@@ -46,34 +44,47 @@ async function s3Upload() {
           });
 
           const normalizedFilename = filename.replace(/\s/g, '-');
+          const fileKey = `BedrockApp/${normalizedFilename}`;
 
-          const params = {
-            Bucket: 'bedrock-apps',
-            Key: `BedrockApp/${normalizedFilename}`,
-            Body: fileStream,
-            ContentType: filename.endsWith('.exe')
-              ? 'application/x-msdownload'
-              : 'application/octet-stream',
-          };
-
-          s3.upload(params, (err, data) => {
-            if (err) {
-              // eslint-disable-next-line no-console
-              console.error(err);
-              reject(err);
-              return;
-            }
-
-            resolve(data);
+          if (bucketContents.includes(fileKey)) {
+            resolve(true);
             // eslint-disable-next-line no-console
-            console.log(`File ${normalizedFilename} was uploaded successfully`);
-          });
+            console.log(
+              `File ${normalizedFilename} already exists in the bucket, skipping it`
+            );
+          }
+
+          if (!bucketContents.includes(fileKey)) {
+            const params = {
+              Bucket: 'bedrock-apps',
+              Key: fileKey,
+              Body: fileStream,
+              ContentType: filename.endsWith('.exe')
+                ? 'application/x-msdownload'
+                : 'application/octet-stream',
+            };
+
+            s3.upload(params, (err, data) => {
+              if (err) {
+                // eslint-disable-next-line no-console
+                console.error(err);
+                reject(err);
+                return;
+              }
+
+              resolve(data);
+              // eslint-disable-next-line no-console
+              console.log(
+                `File ${normalizedFilename} was uploaded successfully`
+              );
+            });
+          }
         })
     )
   )
     .then(() => {
       // eslint-disable-next-line no-console
-      console.log('\nAll files were uploaded successfully');
+      console.log('\nAll files were processed successfully');
       return true;
     })
     .catch((err) => {
