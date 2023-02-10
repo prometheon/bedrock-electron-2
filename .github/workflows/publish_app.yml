@@ -42,21 +42,21 @@ jobs:
           security list-keychains
 
           echo "trying to import AppleWWDRCAG2.cer"
-          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k System.keychain
+          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k login.keychain-db
 
           echo "trying to import developerID_application.cer"
-          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k System.keychain
+          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db
 
           echo "trying to import developerID_installer.cer"
-          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k System.keychain
+          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db
 
           echo "trying to import DeveloperIDG2CA.cer"
-          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k System.keychain
+          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k login.keychain-db
 
           echo "Check existing servificates"
           security find-identity -vp codesigning
 
-          yarn package
+          CSC_KEYCHAIN=login.keychain-db yarn package
 
       - name: Upload App
         run: yarn s3-upload
