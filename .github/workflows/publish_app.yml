@@ -42,19 +42,30 @@ jobs:
           security list-keychains
 
           echo "trying to import AppleWWDRCAG2.cer"
-          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k login.keychain-db
+          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k login.keychain-db -A
+
 
           echo "trying to import developerID_application.cer"
-          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db
+          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db -A
+
+          echo "trying to import developerID_application.cer once again (shoud throw an error, if it's really imported)"
+          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db -A
 
           echo "trying to import developerID_installer.cer"
-          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db
+          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db -A
+
+          echo "trying to import developerID_installer.cer once again (shoud throw an error, if it's really imported)"
+          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db -A
+
 
           echo "trying to import DeveloperIDG2CA.cer"
-          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k login.keychain-db
+          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k login.keychain-db -A
 
-          echo "Check existing servificates"
-          security find-identity -vp codesigning
+          echo "Check all Identities (both valid and invalid) in login.keychain-db"
+          security find-identity -p codesigning login.keychain-db
+
+          echo "Check all Identities (both valid and invalid) in login.keychain"
+          security find-identity -p codesigning login.keychain
 
           CSC_KEYCHAIN=login.keychain-db yarn package
 
