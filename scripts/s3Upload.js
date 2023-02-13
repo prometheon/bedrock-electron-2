@@ -54,7 +54,7 @@ async function s3Upload() {
             );
           }
 
-          if (true /* !bucketContents.includes(fileKey) */) {
+          if (!bucketContents.includes(fileKey)) {
             const params = {
               Bucket: 'bedrock-apps',
               Key: fileKey,
