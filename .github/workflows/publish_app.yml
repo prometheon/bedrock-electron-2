@@ -31,43 +31,45 @@ jobs:
       #security import ./MacOS-certificates/DeveloperIDG2CA.cer -k build.keychain -T /usr/bin/codesign
       #CSC_KEYCHAIN=build.keychain yarn package
 
+      #      echo "Show default keychain"
+      #      security default-keychain
+      #
+      #      echo "Show keychains list"
+      #      security list-keychains
+      #
+      #      echo "trying to import AppleWWDRCAG2.cer"
+      #      security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k login.keychain-db -A
+      #
+      #      echo "trying to import DeveloperIDG2CA.cer"
+      #      security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k login.keychain-db -A
+      #
+      #
+      #      echo "trying to import developerID_application.cer"
+      #      security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db -A
+      #
+      #      echo "trying to import developerID_application.cer once again (shoud throw an error, if it's really imported)"
+      #      security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db -A
+      #
+      #      echo "trying to import developerID_installer.cer"
+      #      security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db -A
+      #
+      #      echo "trying to import developerID_installer.cer once again (shoud throw an error, if it's really imported)"
+      #      security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db -A
+      #
+      #
+      #      echo "Check all Identities (both valid and invalid) in login.keychain-db"
+      #      security find-identity -p codesigning login.keychain-db
+      #
+      #      echo "Check all Identities (both valid and invalid) in login.keychain"
+      #      security find-identity -p codesigning login.keychain
+
       - name: Codesign & Package
+        env:
+          CSC_LINK: ./MacOS-certificates/developerID_application.p12
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
         run: |
           pwd
-
-          echo "Show default keychain"
-          security default-keychain
-
-          echo "Show keychains list"
-          security list-keychains
-
-          echo "trying to import AppleWWDRCAG2.cer"
-          security import ./MacOS-certificates/AppleWWDRCAG2.cer -T /usr/bin/codesign -k login.keychain-db -A
-
-
-          echo "trying to import developerID_application.cer"
-          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db -A
-
-          echo "trying to import developerID_application.cer once again (shoud throw an error, if it's really imported)"
-          security import ./MacOS-certificates/developerID_application.cer -T /usr/bin/codesign -k login.keychain-db -A
-
-          echo "trying to import developerID_installer.cer"
-          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db -A
-
-          echo "trying to import developerID_installer.cer once again (shoud throw an error, if it's really imported)"
-          security import ./MacOS-certificates/developerID_installer.cer -T /usr/bin/codesign -k login.keychain-db -A
-
-
-          echo "trying to import DeveloperIDG2CA.cer"
-          security import ./MacOS-certificates/DeveloperIDG2CA.cer -T /usr/bin/codesign -k login.keychain-db -A
-
-          echo "Check all Identities (both valid and invalid) in login.keychain-db"
-          security find-identity -p codesigning login.keychain-db
-
-          echo "Check all Identities (both valid and invalid) in login.keychain"
-          security find-identity -p codesigning login.keychain
-
-          CSC_KEYCHAIN=login.keychain-db yarn package
+          yarn package
 
       - name: Upload App
         run: yarn s3-upload
