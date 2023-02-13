@@ -17,29 +17,7 @@ Start the app in the `development` environment:
 Prepare big PNG-icon, at least 1024x1024, make sure there is approx 5% of transparent offset from the edges, so the icon will fit properly on Macs.
 Then use https://www.npmjs.com/package/electron-icon-maker to compile new set of icons and place them to `./assets` dir in this repo.
 
-## Packaging for Production
-
-### Prepare certificates for signing
-
-To package production-ready app you will need to install certificates first, so it could be signed properly
-
-Add certificates to your OS's Keychain, should be done only once per certificate:
-
-- Go to `MacOS-certificates` dir in this repo and run each of them to add them.
-- In popup under "Keychain:" dropdown choose "System"
-- Test if valid certificate for signing is present by running `security find-identity -vp codesigning`, it should show `1 valid identities found`:
-  ```
-  $ security find-identity -vp codesigning
-  1) 3EC8422AF3E49C71D4D9424388B9FAA39BC0FF6C "Developer ID Application: Prometheon Systems, Inc. (5KL32K872M)"
-     1 valid identities found
-  ```
-- If previous step went as expected, you can proceed with "Compile apps" step below
-- If you shill see `0 valid identities found`, it is possible that you need to generate certificates once again.
-  Follow [those instructions](./doc/Generate-MacOS-Certificates.md) to do that. After you have fresh certs, put them in `MacOS-certificates` dir and repeat current steps
-
 ### Compile apps
-
-#### Package apps for macOS/Windows
 
 Run:
 
@@ -65,3 +43,7 @@ To enable debug only context menu items in prod-build, run this command instead:
 - For Mac with Intel chip `yarn package-debug-mac`
 - For Mac with M1 chip `yarn package-debug-mac-m1`
 - For Windows `yarn package-debug-win`. Then use `./release/build/Bedrock Setup x.x.x.exe` to start the setup
+
+## Packaging for Production
+
+Automated CI/CD will take care about everything once PR is merged. Just make sure you've updated the version in `release/app/package.json` file.
