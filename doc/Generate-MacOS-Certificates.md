@@ -36,10 +36,6 @@ For the password, you will need to also update `CSC_KEY_PASSWORD` env secret in 
 - Download `Developer ID - G2` certificate
 - Then download one more, `Worldwide Developer Relations - G2`
 
-#### Convert downloaded Certificate from der format to base64
-
-    openssl x509 -inform der -in developerID_application.cer -out developerID_application_base64.cer
-
 #### Convert the .cer file into .pem format:
 
     openssl x509 -in developerID_application.cer -inform DER -out developerID_application.pem -outform PEM
