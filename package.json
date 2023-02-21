@@ -9,38 +9,24 @@
     "build:renderer": "cross-env BASE_URL=https://www.bedrock.computer NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
-    "package": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist && yarn build && electron-builder build --publish never",
-    "package-win": "yarn build && electron-builder build -w --publish never",
+    "pre-package": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist",
+    "package": "yarn pre-package && yarn build && electron-builder build -mw --publish never",
     "package-debug-mac": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package && open ./release/build/mac/Bedrock.app",
     "package-debug-mac-m1": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package && open ./release/build/mac-arm64/Bedrock.app",
-    "package-debug-win": "cross-env DEBUG_PROD=true yarn build && cross-env DEBUG_PROD=true electron-builder build -w --publish never",
-    "package-all": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist && yarn build && electron-builder build --publish never && electron-builder build -w --publish never",
+    "package-debug-win": "cross-env DEBUG_PROD=true yarn build && yarn package",
     "prepare": "husky install",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && yarn start:renderer",
     "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
     "start:preload": "cross-env BASE_URL=http://localhost NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
     "start:renderer": "cross-env BASE_URL=http://localhost NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
-    "test": "jest"
+    "test": "jest",
+    "s3-upload": "node ./scripts/s3Upload.js"
   },
-  "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "typescript",
-    "ts",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
-  ],
   "homepage": "https://bedrock.computer",
-  "bugs": {
-    "url": "https://github.com/electron-react-boilerplate/electron-react-boilerplate/issues"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/electron-react-boilerplate/electron-react-boilerplate.git"
+    "url": "git+https://github.com/prometheon/bedrock-electron-2.git"
   },
   "license": "MIT",
   "author": {
@@ -48,13 +34,6 @@
     "email": "brian.joseff@bedrock.ai",
     "url": "https://bedrock.computer"
   },
-  "contributors": [
-    {
-      "name": "Amila Welihinda",
-      "email": "amilajack@gmail.com",
-      "url": "https://github.com/amilajack"
-    }
-  ],
   "main": "./src/main/main.ts",
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -117,6 +96,7 @@
   },
   "dependencies": {
     "@electron/remote": "2.0.8",
+    "aws-sdk": "^2.1305.0",
     "directory-tree": "3.2.1",
     "dragula": "3.7.3",
     "electron-debug": "^3.2.0",
@@ -275,9 +255,6 @@
         "bedrock-app"
       ]
     }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
   },
   "devEngines": {
     "node": ">=14.x",

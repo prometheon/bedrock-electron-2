@@ -1,0 +1,36 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish_app:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - run: yarn
+
+      - name: Codesign & Package
+        env:
+          CSC_LINK: ./MacOS-certificates/developerID_application.p12
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+        run: |
+          pwd
+          yarn package
+
+      - name: Upload App
+        run: yarn s3-upload
+        env:
+          AWS_ID_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_ID_APP_DOWNLOADS_BUCKET }}
+          AWS_SECRET_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_SECRET_APP_DOWNLOADS_BUCKET }}

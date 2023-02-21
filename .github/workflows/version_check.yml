@@ -1,0 +1,40 @@
+name: Version
+
+on:
+  #  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+  version_check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - name: Check version update
+        id: check
+        uses: EndBug/version-check@v2
+        with:
+          file-name: ./release/app/package.json
+          file-url: https://raw.githubusercontent.com/prometheon/bedrock-electron-2/main/release/app/package.json
+          static-checking: localIsNew
+
+      - name: Log version when it's changed
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          echo "Version change found in commit ${{ steps.check.outputs.commit }}! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"
+
+      - name: Fail job when version is unchanged
+        if: steps.check.outputs.changed == 'false'
+        run: |
+          echo "App version in this branch should be newer than in 'main' branch. PRs without version change should not be merged"
+          exit 1
