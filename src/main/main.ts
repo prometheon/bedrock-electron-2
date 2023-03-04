@@ -11,8 +11,16 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
+import fs from 'fs';
 import os from 'os';
+import fetch from 'node-fetch';
+import { execSync } from 'child_process';
 import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
+import request from 'request';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import progress from 'request-progress';
+import { Console } from 'console';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from '../utils/resolveHtmlPath';
 import {
@@ -22,8 +30,29 @@ import {
   WIN_11_BOUNDS_OFFSET_NORMAL,
 } from '../constants';
 import BASE_URL from '../utils/base_url';
+import releasePackage from '../../release/app/package.json';
 
-let win: BrowserWindow | undefined;
+if (!fs.existsSync(`${app.getPath('home')}/.bedrock`)) {
+  fs.mkdirSync(`${app.getPath('home')}/.bedrock`);
+}
+
+const mainLogger = new Console({
+  stdout: fs.createWriteStream(
+    `${app.getPath('home')}/.bedrock/bedrock-log-stdout.txt`
+  ),
+  stderr: fs.createWriteStream(
+    `${app.getPath('home')}/.bedrock/bedrock-log-stderr.txt`
+  ),
+});
+
+interface VersionSummary {
+  version: string;
+  binaries: {
+    windows: string;
+    macos64bit: string;
+    macosArm64: string;
+  };
+}
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -43,10 +72,13 @@ interface BrowserViewsMap {
   [key: number]: BrowserView;
 }
 
+let win: BrowserWindow | undefined;
+let newAppVersionOutputPath = '';
 const windows = new Set();
 let menuBuilder: MenuBuilder | undefined;
 const browserViews: BrowserViewsMap = {};
 let lastTopBrowserView: BrowserView | null = null;
+let newVersionSummary: VersionSummary | null = null;
 
 function refreshViewBounds(_win?: BrowserWindow, _view?: BrowserView) {
   if (!_win || !_view) {
@@ -74,6 +106,35 @@ function refreshViewBounds(_win?: BrowserWindow, _view?: BrowserView) {
     width: bounds.width - offset,
     height: bounds.height - viewBounds.y - offset,
   });
+}
+
+function toNumberVersion(version: string) {
+  const [, major, minor, patch, , rc] =
+    version.match(/(\d+)\.(\d+)\.(\d+)(-RC)?(\d+)?/) || [];
+
+  return (
+    parseInt(major, 10) * 1e9 +
+    parseInt(minor, 10) * 1e6 +
+    parseInt(patch, 10) * 1e3 +
+    (parseInt(rc, 10) || 999)
+  );
+}
+
+async function checkVersion() {
+  const versions = await fetch(
+    'https://www.bedrock.computer/api/downloads/versions'
+  ).then((res: any) => res.json());
+
+  if (!Array.isArray(versions) || !versions[0]) {
+    return;
+  }
+
+  const { version, binaries } = versions[0];
+
+  if (toNumberVersion(version) > toNumberVersion(releasePackage.version)) {
+    newVersionSummary = { version, binaries };
+    win?.webContents.send('bedrock-event-newVersion', version);
+  }
 }
 
 const createWindow = async () => {
@@ -316,13 +377,110 @@ const createWindow = async () => {
     }
   );
 
+  ipcMain.on('bedrock-event-startNewVersionDownload', async () => {
+    if (!newVersionSummary) {
+      return;
+    }
+
+    const url =
+      os.platform() === 'win32'
+        ? newVersionSummary.binaries.windows
+        : os.platform() === 'darwin' && process.arch === 'arm64'
+        ? newVersionSummary.binaries.macosArm64
+        : os.platform() === 'darwin' && process.arch === 'x64'
+        ? newVersionSummary.binaries.macos64bit
+        : null;
+
+    if (!url) {
+      return;
+    }
+
+    const filename = url.split('/').pop();
+    newAppVersionOutputPath = `${os.tmpdir()}/${filename}`;
+
+    // remove possible duplicated file with prev versions, if found
+    fs.rmSync(newAppVersionOutputPath, { force: true });
+
+    progress(request(url))
+      .on('progress', (state: any) => {
+        win?.webContents.send(
+          'bedrock-event-newVersionDownloadProgress',
+          state
+        );
+      })
+      .on('error', (err: Error) => {
+        // Do something with err
+        mainLogger.error(
+          `Bedrock main process new version download error: `,
+          err
+        );
+        console.error(`Bedrock main process new version download error: `, err);
+
+        fs.rmSync(newAppVersionOutputPath, { force: true });
+        win?.webContents.send('bedrock-event-newVersionDownloadError');
+      })
+      .on('end', () => {
+        win?.webContents.send('bedrock-event-newVersionDownloadFinished');
+      })
+      .pipe(fs.createWriteStream(newAppVersionOutputPath));
+  });
+
+  ipcMain.on('bedrock-event-installNewVersion', async () => {
+    if (!newAppVersionOutputPath) {
+      return;
+    }
+
+    if (os.platform() === 'darwin') {
+      const command = [
+        `hdiutil attach ${newAppVersionOutputPath}`,
+        `cp -r /Volumes/Bedrock\\ ${newVersionSummary?.version}/Bedrock.app/ /Applications/Bedrock.app/`,
+        `hdiutil unmount /Volumes/Bedrock\\ ${newVersionSummary?.version}`,
+        `rm -rf ${newAppVersionOutputPath}`,
+      ].join(' && ');
+
+      try {
+        execSync(command, { stdio: 'inherit' });
+        app.relaunch();
+        app.exit();
+      } catch (error) {
+        mainLogger.error(`Bedrock main process error: `, error);
+        console.error(`Bedrock main process error: `, error);
+      }
+    }
+
+    if (os.platform() === 'win32') {
+      try {
+        execSync(newAppVersionOutputPath, { stdio: 'inherit' });
+        app.exit();
+      } catch (error) {
+        mainLogger.error(`Bedrock main process error: `, error);
+        console.error(`Bedrock main process error: `, error);
+      }
+    }
+  });
+
   windows.add(win);
   return win;
+};
+
+const createAppVersionChecker = async () => {
+  setTimeout(() => {
+    checkVersion().catch();
+  }, 10000);
+
+  setTimeout(() => {
+    createAppVersionChecker();
+  }, 120 * 1000);
 };
 
 /** ***************************
  * Add event listeners...
  **************************** */
+
+if (process.env.NODE_ENV === 'development' && os.platform() === 'win32') {
+  // workaround that prevents runtime error in Windows
+  app.commandLine.appendSwitch('disable-gpu-sandbox');
+}
 
 app.on('browser-window-created', (_, window) => {
   require('@electron/remote/main').enable(window.webContents);
@@ -336,7 +494,14 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.whenReady().then(createWindow).catch(console.log);
+app
+  .whenReady()
+  .then(createWindow)
+  .then(createAppVersionChecker)
+  .catch((error) => {
+    mainLogger.error(`Bedrock main process error: `, error);
+    console.error(`Bedrock main process error: `, error);
+  });
 
 app.on('open-url', (event, bedrockAppUrl) => {
   event.preventDefault();
@@ -364,5 +529,6 @@ app.on('web-contents-created', (_, contents) => {
 
 ipcMain.on('uncaughtException', (error) => {
   // Handle the error
-  console.log('ipcMain Caught Error:', error);
+  mainLogger.error(`Bedrock main process error: `, error);
+  console.error(`Bedrock main process error: `, error);
 });

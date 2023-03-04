@@ -1,0 +1,31 @@
+.NotificationsBar {
+  padding: 3px 2px 1px 2px;
+  text-align: right;
+}
+.DownloadButton {
+  height: 30px;
+  line-height: 26px;
+  padding: 0 12px;
+  background: #b0feb0;
+  border: 2px solid #006400;
+  color: #006400;
+  border-radius: 30px;
+  outline: none;
+  cursor: pointer;
+  margin: 2px;
+  transition: all 2s;
+}
+.DownloadButton[disabled] {
+  filter: grayscale(50%);
+  cursor: not-allowed;
+}
+.DownloadButton:hover {
+  background: #90ee90;
+  color: #004400;
+}
+
+.DownloadButtonError {
+  background: #feb0b0;
+  border: 2px solid #640000;
+  color: #640000;
+}
