@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactImageFallback from 'react-image-fallback';
+import NotificationsPanel from '../NotificationsPanel/NotificationsPanel';
 import { getWindow, setViewsTopBound } from '../../../utils/windowUtils';
 import BASE_URL from '../../../utils/base_url';
 import minimizeIcon from './minimize.png';
@@ -558,6 +559,8 @@ function Tabs() {
             )
           : null}
       </div>
+
+      <NotificationsPanel />
 
       {window.platform.isWindows && (
         <div className={styles.WindowsControls}>
