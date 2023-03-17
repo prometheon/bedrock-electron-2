@@ -505,8 +505,26 @@ app
 
 app.on('open-url', (event, bedrockAppUrl) => {
   event.preventDefault();
-  const url = bedrockAppUrl.replace('bedrock-app://', 'https://');
-  win?.webContents.send('bedrock-event-openTab', url);
+  const url = bedrockAppUrl.replace(
+    'bedrock-app://',
+    bedrockAppUrl.includes('bedrock-app://localhost') ? 'http://' : 'https://'
+  );
+
+  if (windows.size === 0) {
+    createWindow()
+      .then(() => {
+        setTimeout(() => {
+          win?.webContents.send('bedrock-event-openTab', url);
+        }, 2000);
+        return true;
+      })
+      .catch((error) => {
+        mainLogger.error(`Bedrock main process error: `, error);
+        console.error(`Bedrock main process error: `, error);
+      });
+  } else {
+    win?.webContents.send('bedrock-event-openTab', url);
+  }
 });
 
 app.setAsDefaultProtocolClient('bedrock-app');
