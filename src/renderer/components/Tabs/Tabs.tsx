@@ -13,6 +13,7 @@ import globeIcon from './globe.svg';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import styles from './Tabs.module.css';
+import useLocalStorage from '../../hooks/useLocalStorage';
 
 interface Tab {
   createdAt: number;
@@ -80,11 +81,35 @@ function TabGeometry() {
 }
 
 function Tabs() {
-  const [tabs, setTabs] = useState<Tab[]>([]);
+  const [tabs, setTabs] = useLocalStorage<Tab[]>('tabs', [], (initialTabs) => {
+    initialTabs.forEach(({ url, createdAt }) => {
+      setTimeout(() => {
+        window.sendToElectron('bedrock-event-createBrowserView', {
+          url,
+          createdAt,
+        });
+      }, 0);
+    });
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tabsRef = useRef<any>();
 
-  const [activeTab, setActiveTabRaw] = useState<Tab | null>(tabs[0]);
+  const [activeTab, setActiveTabRaw] = useLocalStorage<Tab | null>(
+    'activeTab',
+    tabs[0],
+    (initialActiveTab) => {
+      if (!initialActiveTab) {
+        return;
+      }
+
+      setTimeout(() => {
+        window.sendToElectron('bedrock-event-activateBrowserView', {
+          createdAt: initialActiveTab.createdAt,
+        });
+      }, 50);
+    }
+  );
   const setActiveTab = useCallback(
     (nextActiveTab: Tab | null) => {
       if (nextActiveTab === activeTab) {
@@ -99,7 +124,7 @@ function Tabs() {
         });
       }
     },
-    [activeTab]
+    [activeTab, setActiveTabRaw]
   );
 
   const [currentTabWidth, setCurrentTabWidth] = useState<number>(9999);
@@ -140,7 +165,7 @@ function Tabs() {
         setActiveTab(newTab);
       }
     },
-    [setActiveTab]
+    [setActiveTab, setTabs]
   );
 
   const openFinder = useCallback(() => {
@@ -173,7 +198,7 @@ function Tabs() {
         setActiveTab({ ...activeTab, ...nextTabProps });
       }
     },
-    [activeTab, setActiveTab]
+    [activeTab, setActiveTab, setTabs]
   );
 
   useEffect(() => {
@@ -272,7 +297,7 @@ function Tabs() {
         onBedrockEventDidNavigateInPage
       );
     };
-  }, [activeTab, findAndUpdateTab, openTab, tabs]);
+  }, [activeTab, findAndUpdateTab, openTab, setTabs, tabs]);
 
   useEffect(() => {
     if (tabsRef.current) {
@@ -485,7 +510,7 @@ function Tabs() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, []);
+  }, [setTabs]);
 
   return (
     <div ref={tabsRef}>

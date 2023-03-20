@@ -286,6 +286,7 @@ const createWindow = async () => {
   win.on('closed', () => {
     windows.delete(win);
     win = undefined;
+    lastTopBrowserView = null;
   });
 
   win.on('show', () => {
