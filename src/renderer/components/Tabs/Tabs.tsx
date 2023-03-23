@@ -526,7 +526,10 @@ function Tabs() {
                   onMouseDown={(event) =>
                     event.button === 0 && onTabClick(event as any, index)
                   }
-                  style={{ maxWidth: tabMaxWidth, minWidth: tabMaxWidth }}
+                  style={{
+                    maxWidth: tabMaxWidth,
+                    minWidth: tabMaxWidth,
+                  }}
                   title={tab.title}
                 >
                   <div className={styles.TabDividers} />

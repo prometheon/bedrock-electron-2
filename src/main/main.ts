@@ -31,6 +31,7 @@ import {
 } from '../constants';
 import BASE_URL from '../utils/base_url';
 import releasePackage from '../../release/app/package.json';
+import LocalFilesWatcher from '../utils/dirWatcher/LocalFilesWatcher';
 
 if (!fs.existsSync(`${app.getPath('home')}/.bedrock`)) {
   fs.mkdirSync(`${app.getPath('home')}/.bedrock`);
@@ -79,6 +80,7 @@ let menuBuilder: MenuBuilder | undefined;
 const browserViews: BrowserViewsMap = {};
 let lastTopBrowserView: BrowserView | null = null;
 let newVersionSummary: VersionSummary | null = null;
+const localFilesWatcher = new LocalFilesWatcher();
 
 function refreshViewBounds(_win?: BrowserWindow, _view?: BrowserView) {
   if (!_win || !_view) {
@@ -219,7 +221,19 @@ const createWindow = async () => {
       }
     );
 
+    // browserView.webContents.on('did-finish-load', () => {
+    // });
+
+    browserView.webContents.on('destroyed', () => {
+      if (isBedrockUrl) {
+        localFilesWatcher.detachWebContents(browserView.webContents);
+      }
+    });
+
     win.addBrowserView(browserView);
+    if (isBedrockUrl) {
+      localFilesWatcher.attachWebContents(browserView.webContents);
+    }
 
     if (show) {
       lastTopBrowserView = browserView;
@@ -267,11 +281,6 @@ const createWindow = async () => {
     }
     win.show();
     win.focus();
-
-    // eslint-disable-next-line promise/catch-or-return
-    // initDirWatcher(win.webContents).then((w) => {
-    //   return app?.on('will-quit', w.stop);
-    // });
   });
 
   win.on('resize', () => {
@@ -544,6 +553,8 @@ app.on('web-contents-created', (_, contents) => {
     return { action: 'deny' };
   });
 });
+
+app.on('will-quit', () => localFilesWatcher.killWatcher());
 
 ipcMain.on('uncaughtException', (error) => {
   // Handle the error

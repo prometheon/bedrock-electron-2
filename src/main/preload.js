@@ -8,6 +8,19 @@ window.platform = {
   isWindows: os.platform() === 'win32',
   isLinux: os.platform() === 'linux',
 };
+let niceOSName = 'Unknown';
+if (window.platform.isMac) {
+  niceOSName = 'MacOS';
+} else if (window.platform.isWindows) {
+  niceOSName = 'Windows';
+} else if (window.platform.isLinux) {
+  niceOSName = 'Linux';
+}
+const { username } = os.userInfo();
+window.deviceInfo = {
+  username,
+  os: niceOSName,
+};
 
 // ipc guide
 // https://www.electronjs.org/docs/latest/api/ipc-main
