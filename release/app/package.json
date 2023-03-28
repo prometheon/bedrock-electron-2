@@ -1,6 +1,6 @@
 {
   "name": "bedrock",
-  "version": "1.3.1",
+  "version": "1.3.1.dev.localFiles",
   "description": "Bedrock App",
   "license": "MIT",
   "author": {
