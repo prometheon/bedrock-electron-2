@@ -97,38 +97,6 @@ class LocalFilesWatcher {
     }
   };
 
-  // implement disk access request
-  //
-  // private requestFullDiskAccess() {
-  //     if (process.platform === 'darwin') {
-  //         // On macOS, use the "security" command-line utility to add Electron to the Full Disk Access list
-  //         require('child_process').execSync('sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <(echo "cert")');
-  //         dialog.showMessageBoxSync({ message: 'Please restart the application to apply the changes.' })
-  //     } else if (process.platform === 'win32') {
-  //         // On Windows, use the "icacls" command-line utility to add Electron to the AppContainer's ACL list
-  //         require('child_process').execSync('icacls %LOCALAPPDATA%\Programs\<Your App Name> /grant:r "ALL APPLICATION PACKAGES":F')
-  //         dialog.showMessageBoxSync({ message: 'Please restart the application to apply the changes.' })
-  //     } else {
-  //         // On Linux, display a message informing the user that they need to manually grant full disk access
-  //         dialog.showMessageBoxSync({ message: 'Please grant full disk access to the application manually.' })
-  //     }
-  // }
-
-  // private checkFullDiskAccess() {
-  //     if (process.platform === 'darwin') {
-  //         // On macOS, check if Electron is in the Full Disk Access list
-  //         const output = require('child_process').execSync('sudo security authorizationdb read system.privilege.admin', { encoding: 'utf-8' })
-  //         return output.includes('com.electron.')
-  //     } else if (process.platform === 'win32') {
-  //         // On Windows, check if the AppContainer has full control over the application folder
-  //         const output = require('child_process').execSync('icacls %LOCALAPPDATA%\Programs\<Your App Name>').toString()
-  //         return output.includes('ALL APPLICATION PACKAGES:(F)')
-  //     } else {
-  //         // On Linux, assume that the user has manually granted full disk access
-  //         return true
-  //     }
-  // }
-
   private sendTree = (paths: string[]) => {
     let finalTree: FlatNodes = {};
 
