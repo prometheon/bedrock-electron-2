@@ -19,11 +19,10 @@ interface GetTreeRequest {
   };
 }
 
-interface GetFileRequest {
-  action: 'GET_FILE';
+interface GetFileMetadataRequest {
+  action: 'GET_FILE_METADATA';
   options: {
     path: string;
-    destinationEid: string;
   };
 }
 
@@ -38,7 +37,7 @@ type REQEUEST =
   | InitWatcherRequest
   | KillWatcherRequest
   | GetTreeRequest
-  | GetFileRequest
+  | GetFileMetadataRequest
   | OpenFileRequest;
 
 interface DirEvent {

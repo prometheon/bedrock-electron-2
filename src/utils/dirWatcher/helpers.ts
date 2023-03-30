@@ -2,10 +2,11 @@ import { FileChangeEvent } from 'nsfw';
 import { FlatNode, FlatNodes, TreeNode } from './types';
 
 export const flattenTreeNodes = (node: TreeNode): FlatNodes => {
-  const { children, name } = node;
+  const { children, name, path } = node;
+
   const flatNode: FlatNode = {
-    id: node.path,
-    foreignId: node.path,
+    id: path,
+    foreignId: path,
     name,
     isFolder: node.type === 'directory',
     ...(children && { childrenList: children.map((child) => child.path) }),

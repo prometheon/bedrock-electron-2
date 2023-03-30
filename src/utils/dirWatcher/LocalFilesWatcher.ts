@@ -86,8 +86,8 @@ class LocalFilesWatcher {
       case 'GET_TREE':
         this.sendTree(options.paths);
         break;
-      case 'GET_FILE':
-        this.sendFileData(options);
+      case 'GET_FILE_METADATA':
+        this.sendFileData(options.path);
         break;
       case 'OPEN_FILE':
         this.openLocalFile(options.path);
@@ -128,17 +128,14 @@ class LocalFilesWatcher {
     });
   };
 
-  private sendFileData = (options: {
-    path: string;
-    destinationEid: string;
-  }) => {
-    const fileData = localFileData(options.path);
+  private sendFileData = async (path: string) => {
+    const fileData = await localFileData(path);
 
     this.webContentsList.forEach((wc) => {
       wc.send(DIR_WATCHER_EVENTS_CHANNEL_NAME, {
-        type: 'FILE',
-        file: fileData,
-        ...options,
+        ok: true,
+        type: 'GET_FILE_METADATA_RESPONSE',
+        data: fileData,
       });
     });
   };
