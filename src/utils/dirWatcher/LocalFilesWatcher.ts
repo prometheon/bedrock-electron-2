@@ -141,8 +141,26 @@ class LocalFilesWatcher {
   };
 
   private openLocalFile = (path: string) => {
-    const command = platform === 'win32' ? 'start' : 'open';
-    exec(`${command} "${path}"`);
+    try {
+      const command = platform === 'win32' ? 'start' : 'open';
+      exec(`${command} "${path}"`);
+
+      this.webContentsList.forEach((wc) => {
+        wc.send(DIR_WATCHER_EVENTS_CHANNEL_NAME, {
+          type: 'OPEN_FILE_RESPONSE',
+          ok: true,
+        });
+      });
+    } catch (error) {
+      this.webContentsList.forEach((wc) => {
+        wc.send(DIR_WATCHER_EVENTS_CHANNEL_NAME, {
+          type: 'OPEN_FILE_RESPONSE',
+          ok: false,
+          data: error,
+        });
+      });
+      console.error(error);
+    }
   };
 
   private initNativeFileSystemEventsWatcher = async (path: string) => {
@@ -165,39 +183,5 @@ class LocalFilesWatcher {
     });
   };
 }
-
-// function isFolderPath(path: string): boolean | null {
-//     let isFolder = null;
-
-//     // this is always giving error:
-//     // [Error: ENOENT: no such file or directory, stat '/Users/tem/Downloads/wow'] {
-//     //     errno: -2,
-//     //     code: 'ENOENT',
-//     //     syscall: 'stat',
-//     //     path: '/Users/tem/Downloads/wow'
-//     //   }
-//     //   [Error: ENOENT: no such file or directory, stat '/Users/tem/Downloads/asdfsad'] {
-//     //     errno: -2,
-//     //     code: 'ENOENT',
-//     //     syscall: 'stat',
-//     //     path: '/Users/tem/Downloads/asdfsad'
-//     //   }
-
-//     stat(path, (err, stats) => {
-//         if (err) {
-//             console.error(err);
-//         } else {
-//             if (stats.isDirectory()) {
-//                 isFolder = true;
-//             } else if (stats.isFile()) {
-//                 isFolder = false;
-//             } else {
-//                 console.log(path, 'is not a directory or a file');
-//             }
-//         }
-//     });
-
-//     return isFolder;
-// }
 
 export default LocalFilesWatcher;
