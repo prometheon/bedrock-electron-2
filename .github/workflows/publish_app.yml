@@ -21,8 +21,8 @@ jobs:
 
       - run: yarn
 
-      - name: Prune release folder
-        run: rm -rf ./release/build
+      - name: Clean working directory
+        run: git clean -fdx
 
       - name: Codesign & Package
         env:
