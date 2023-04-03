@@ -21,6 +21,9 @@ jobs:
 
       - run: yarn
 
+      - name: Prune release folder
+        run: rm -rf ./release/build
+
       - name: Codesign & Package
         env:
           CSC_LINK: ./MacOS-certificates/developerID_application.p12
