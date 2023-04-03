@@ -13,6 +13,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Clean working directory
+        run: git clean -fdx
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -20,9 +23,6 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
-
-      - name: Clean working directory
-        run: git clean -fdx
 
       - name: Codesign & Package
         env:
