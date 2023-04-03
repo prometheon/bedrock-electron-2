@@ -13,9 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Clean working directory
-        run: git clean -fdx
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -23,12 +20,12 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
-      - run: yarn rebuild
 
       - name: Codesign & Package
         env:
           CSC_LINK: ./MacOS-certificates/developerID_application.p12
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          USE_HARD_LINKS: false
         run: |
           pwd
           yarn package
