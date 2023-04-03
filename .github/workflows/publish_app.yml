@@ -23,6 +23,7 @@ jobs:
           cache: 'yarn'
 
       - run: yarn
+      - run: yarn rebuild
 
       - name: Codesign & Package
         env:
