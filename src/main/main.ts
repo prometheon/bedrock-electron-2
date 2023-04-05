@@ -441,10 +441,12 @@ const createWindow = async () => {
     }
 
     if (os.platform() === 'darwin') {
+      const archPostFix = process.arch === 'arm64' ? '-arm64' : '';
+
       const command = [
         `hdiutil attach ${newAppVersionOutputPath}`,
-        `cp -r /Volumes/Bedrock\\ ${newVersionSummary?.version}/Bedrock.app/ /Applications/Bedrock.app/`,
-        `hdiutil unmount /Volumes/Bedrock\\ ${newVersionSummary?.version}`,
+        `cp -r /Volumes/Bedrock\\ ${newVersionSummary?.version}${archPostFix}/Bedrock.app/ /Applications/Bedrock.app/`,
+        `hdiutil unmount /Volumes/Bedrock\\ ${newVersionSummary?.version}${archPostFix}`,
         `rm -rf ${newAppVersionOutputPath}`,
       ].join(' && ');
 
