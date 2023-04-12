@@ -520,72 +520,63 @@ function Tabs() {
           window.platform.isMac ? styles.TabsPlatformMac : ''
         } ${window.platform.isWindows ? styles.TabsPlatformWindows : ''}`}
       >
-        {tabs.length > 1 || bedrockTabsCount === 0 ? (
-          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+        {tabs.map((tab, index) =>
+          tab ? (
+            <div
+              key={tab.createdAt}
+              className={`${styles.Tab} ${
+                tab.createdAt === activeTab?.createdAt ? styles.TabActive : ''
+              }`}
+              data-active-tab={
+                tab.createdAt === activeTab?.createdAt ? 'true' : 'false'
+              }
+              onMouseDown={(event) =>
+                event.button === 0 && onTabClick(event as any, index)
+              }
+              style={{
+                maxWidth: tabMaxWidth,
+                minWidth: tabMaxWidth,
+              }}
+              title={tab.title}
+            >
+              <div className={styles.TabDividers} />
+              <TabGeometry />
+
+              {tab.icon && currentTabWidth > MIN_FULL_TAB_WIDTH ? (
+                <ReactImageFallback
+                  src={tab.icon}
+                  fallbackImage={globeIcon}
+                  className={styles.TabIcon}
+                  alt={`icon for ${tab.title}` || `tab ${index} icon`}
+                />
+              ) : null}
+
+              {currentTabWidth > MIN_FULL_TAB_WIDTH ? (
+                <div className={styles.TabTitle}>{tab.title}</div>
+              ) : null}
+
+              {tabs.length > 1 ? (
+                <div
+                  className={styles.TabClose}
+                  onMouseDown={(event) => {
+                    if (event.button === 0) {
+                      onTabClose(event as any, index);
+                      event.stopPropagation();
+                    }
+                  }}
+                />
+              ) : null}
+            </div>
+          ) : null
+        )}
+        <span onClick={openBase}>
           <img
-            src={bedrockLogoIcon}
             className={styles.ToolbarButton}
-            onClick={openBase}
+            src={bedrockLogoIcon}
             title="Open Bedrock Base"
             alt="Open Bedrock Base"
           />
-        ) : null}
-
-        {tabs.length === 1 ? (
-          <div className={`${styles.Tab} ${styles.TabSingle} `} />
-        ) : null}
-
-        {tabs.length > 1
-          ? tabs.map((tab, index) =>
-              tab ? (
-                <div
-                  key={tab.createdAt}
-                  className={`${styles.Tab} ${
-                    tab.createdAt === activeTab?.createdAt
-                      ? styles.TabActive
-                      : ''
-                  }`}
-                  data-active-tab={
-                    tab.createdAt === activeTab?.createdAt ? 'true' : 'false'
-                  }
-                  onMouseDown={(event) =>
-                    event.button === 0 && onTabClick(event as any, index)
-                  }
-                  style={{
-                    maxWidth: tabMaxWidth,
-                    minWidth: tabMaxWidth,
-                  }}
-                  title={tab.title}
-                >
-                  <div className={styles.TabDividers} />
-                  <TabGeometry />
-
-                  {tab.icon && currentTabWidth > MIN_FULL_TAB_WIDTH ? (
-                    <ReactImageFallback
-                      src={tab.icon}
-                      fallbackImage={globeIcon}
-                      className={styles.TabIcon}
-                      alt={`icon for ${tab.title}` || `tab ${index} icon`}
-                    />
-                  ) : null}
-
-                  {currentTabWidth > MIN_FULL_TAB_WIDTH ? (
-                    <div className={styles.TabTitle}>{tab.title}</div>
-                  ) : null}
-
-                  <div
-                    className={styles.TabClose}
-                    onMouseDown={(event) => {
-                      if (event.button === 0) {
-                        onTabClose(event as any, index);
-                        event.stopPropagation();
-                      }
-                    }}
-                  />
-                </div>
-              ) : null
-            )
-          : null}
+        </span>
       </div>
 
       <NotificationsPanel />
