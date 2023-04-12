@@ -85,7 +85,7 @@ export default class MenuBuilder {
   }
 
   goHomeAction() {
-    this.mainView?.webContents.loadURL(`${BASE_URL}/finder`);
+    this.mainView?.webContents.loadURL(`${BASE_URL}/base`);
   }
 
   toggleFullScreenAction() {

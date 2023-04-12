@@ -168,11 +168,11 @@ function Tabs() {
     [setActiveTab, setTabs]
   );
 
-  const openFinder = useCallback(() => {
+  const openBase = useCallback(() => {
     openTab(
       {
-        title: 'Finder',
-        url: `${BASE_URL}/finder`,
+        title: 'Base',
+        url: `${BASE_URL}/base`,
         icon: bedrockLogoIcon,
       },
       { asFirstTab: true, asActiveTab: true }
@@ -203,9 +203,9 @@ function Tabs() {
 
   useEffect(() => {
     if (!tabs.length) {
-      openFinder();
+      openBase();
     }
-  }, [tabs, openFinder]);
+  }, [tabs, openBase]);
 
   useEffect(() => {
     const onBedrockEventSignOut = () => {
@@ -525,9 +525,9 @@ function Tabs() {
           <img
             src={bedrockLogoIcon}
             className={styles.ToolbarButton}
-            onClick={openFinder}
-            title="Open Bedrock Finder"
-            alt="Open Bedrock Finder"
+            onClick={openBase}
+            title="Open Bedrock Base"
+            alt="Open Bedrock Base"
           />
         ) : null}
 

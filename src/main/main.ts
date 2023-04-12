@@ -216,7 +216,7 @@ const createWindow = async () => {
         ) {
           // workaround of weird error with "Login with Google" leading to the broken page
           // we do redirect only on second hit of this page, otherwise login will not be successful
-          browserView.webContents.loadURL(`${BASE_URL}/finder`);
+          browserView.webContents.loadURL(`${BASE_URL}/base`);
         }
       }
     );
