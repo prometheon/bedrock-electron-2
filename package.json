@@ -9,11 +9,13 @@
     "build:renderer": "cross-env BASE_URL=https://www.bedrock.computer NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.prod.ts",
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
-    "pre-package": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist",
-    "package": "yarn pre-package && yarn build && electron-builder build -mw --publish never",
-    "package-debug-mac": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package && open ./release/build/mac/Bedrock.app",
-    "package-debug-mac-m1": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package && open ./release/build/mac-arm64/Bedrock.app",
-    "package-debug-win": "cross-env DEBUG_PROD=true yarn build && yarn package",
+    "pre-package-win": "if exist src\\dist rmdir /s /q src\\dist && if exist src\\nsfw.node del /f /q src\\nsfw.node && if exist release\\build\\* del /f /q release\\build\\* && ts-node .\\.erb\\scripts\\clean.js dist",
+    "package-win": "yarn pre-package-win && yarn build && electron-builder build -w --publish never",
+    "pre-package-mac": "rm -rf src/dist && rm -rf src/nsfw.node && rm -rf release/build/* && ts-node ./.erb/scripts/clean.js dist",
+    "package-mac": "yarn pre-package-mac && yarn build && electron-builder build -m --publish never",
+    "package-debug-mac": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package-mac && open ./release/build/mac/Bedrock.app",
+    "package-debug-mac-m1": "osascript -e 'quit app \"Bedrock\"' && cross-env DEBUG_PROD=true yarn package-mac && open ./release/build/mac-arm64/Bedrock.app",
+    "package-debug-win": "cross-env DEBUG_PROD=true yarn build && yarn package-win",
     "prepare": "husky install",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && yarn start:renderer",
@@ -21,7 +23,8 @@
     "start:preload": "cross-env BASE_URL=http://localhost NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
     "start:renderer": "cross-env BASE_URL=http://localhost NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
     "test": "jest",
-    "s3-upload": "node ./scripts/s3Upload.js"
+    "s3-upload-mac": "node ./scripts/s3Upload.js mac",
+    "s3-upload-win": "node ./scripts/s3Upload.js win"
   },
   "homepage": "https://bedrock.computer",
   "repository": {
