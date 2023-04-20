@@ -37,6 +37,7 @@
 
 .TabsPlatformWindows {
   padding-right: 155px;
+  padding-left: 15px;
 }
 
 .Tab {
@@ -211,6 +212,7 @@
   background-repeat: no-repeat;
   background-size: 17px 17px;
   cursor: pointer;
+  -webkit-app-region: none;
 }
 
 .TabNew:hover {
