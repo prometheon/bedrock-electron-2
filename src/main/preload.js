@@ -40,3 +40,22 @@ window.once = (channel, listener) => {
 window.removeElectronListener = (channel, listener) => {
   ipcRenderer.removeListener(channel, listener);
 };
+
+window.setCSSVariables = (variables) => {
+  Object.entries(variables).forEach(([key, value]) => {
+    document.documentElement.style.setProperty(key, value);
+  });
+};
+
+window.onload = () => {
+  const variables = {
+    '--w': '1920px',
+    '--h': '1080px',
+    '--x': `calc(var(--w) * 0.8391)`,
+    '--y': `calc(var(--h) * 0.8391)`,
+    '--x2': `calc(var(--w) * 0.5)`,
+    '--y2': `calc(var(--h) * 0.1609)`,
+    '--electronBackground': `radial-gradient(var(--x) var(--y) at var(--x2) var(--y2), #494B50 0, #000000 var(--h))`,
+  };
+  window.setCSSVariables(variables);
+};

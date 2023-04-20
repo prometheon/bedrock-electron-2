@@ -1,15 +1,34 @@
 .Tabs {
-  display: flex;
-  width: 100%;
-  overflow: hidden;
-  max-width: 100%;
-  flex-wrap: wrap;
   position: relative;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: 4px;
+
+  width: 100%;
+  max-width: 100%;
+  height: 56px;
+  overflow: hidden;
+
+  padding: 10px 3px 10px 3px;
+
   font-size: 12px;
-  height: 42px;
-  padding: 8px 3px 16px 3px;
-  background: #dee1e6;
   -webkit-app-region: drag; /* allows to drag window around by holding it's title, but completely blocks user clicks */
+  /* background: radial-gradient(83.91vw 83.91vh at 50vw 16.09vh, #494B50 0vh, #000000 100vh); */
+
+  --w: 1920px;
+  --h: 1080px;
+  --x: calc(var(--w) * 0.8391);
+  --y: calc(var(--h) * 0.8391 + 56px);
+  --x2: calc(var(--w) * 0.5);
+  --y2: calc(var(--h) * 0.1609 + 56px);
+  background: radial-gradient(
+    var(--x) var(--y) at var(--x2) var(--y2),
+    #494b50 0,
+    #000000 var(--h)
+  );
 }
 
 .TabsPlatformMac {
@@ -23,22 +42,35 @@
 .Tab {
   position: relative;
   display: flex;
-  padding: 9px 18px;
+  flex-direction: row;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: flex-start;
+
   height: 36px;
   width: auto;
-  flex-grow: 1;
+  max-width: 316px;
+  min-width: 40px;
+
+  border-radius: 8px;
+  padding: 8px;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-left: -16px;
-  flex-direction: row;
-  max-width: 316px;
-  min-width: 40px;
+
+  opacity: 0.5;
+  color: white;
+
   transform: translate3d(0px, 0, 0);
-  transition: all 0.1s ease;
+  transition: all 0.3s ease;
   user-select: none;
-  justify-content: flex-end;
   -webkit-app-region: none;
+}
+
+.Tab:hover {
+  opacity: 1;
+  background: rgba(77, 77, 77, 0.3);
 }
 
 .Tab * {
@@ -64,6 +96,18 @@
 .TabActive.TabActive {
   z-index: 5;
   transition: all 0.05s ease;
+  color: white;
+  opacity: 1;
+  background: rgba(77, 77, 77, 1);
+}
+
+.TabClose:hover {
+  background-color: rgb(64, 64, 64) !important;
+}
+
+.Tab:hover .TabClose {
+  opacity: 1;
+  background-color: rgba(77, 77, 77, 0.6);
 }
 
 .Tab:hover > svg {
@@ -73,6 +117,14 @@
 .TabActive > svg,
 .TabActive:hover > svg {
   opacity: 1;
+}
+
+.TabChevron {
+  background: url("data:image/svg+xml;utf8,<svg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M4.63477 5.20898C4.73568 5.20573 4.82845 5.1862 4.91309 5.15039C5.00098 5.11133 5.08398 5.05273 5.16211 4.97461L8.8291 1.20996C8.95605 1.08626 9.01953 0.934896 9.01953 0.755859C9.01953 0.635417 8.99023 0.52474 8.93164 0.423828C8.87305 0.322917 8.79329 0.243164 8.69238 0.18457C8.59473 0.125977 8.48568 0.0966797 8.36523 0.0966797C8.18294 0.0966797 8.02344 0.163411 7.88672 0.296875L4.41504 3.87109H4.85938L1.37793 0.296875C1.24121 0.163411 1.08171 0.0966797 0.899414 0.0966797C0.778971 0.0966797 0.668294 0.125977 0.567383 0.18457C0.469727 0.243164 0.391602 0.322917 0.333008 0.423828C0.274414 0.52474 0.245117 0.635417 0.245117 0.755859C0.245117 0.847005 0.259766 0.930013 0.289062 1.00488C0.321615 1.07975 0.368815 1.14974 0.430664 1.21484L4.10742 4.97461C4.26693 5.13086 4.44271 5.20898 4.63477 5.20898Z' fill='white'/></svg>");
+  width: 10px;
+  height: 6px;
+  margin-right: 10px;
+  margin-left: 10px;
 }
 
 .TabSingle {
@@ -141,29 +193,47 @@
   overflow: hidden;
   white-space: nowrap;
   margin-left: 4px;
-  color: #1f2328;
 }
 
-.TabActive .TabTitle {
-  color: #000;
+/* .TabActive .TabTitle {
+} */
+
+.TabNew {
+  flex-grow: 0;
+  flex-shrink: 0;
+  position: relative;
+  margin-left: 16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background-image: url("data:image/svg+xml;utf8,<svg width='17' height='17' viewBox='0 0 17 17' fill='none' xmlns='http://www.w3.org/2000/svg'><path fill-rule='evenodd' clip-rule='evenodd' d='M9.47841 1.24659C9.47841 0.801497 9.11759 0.440674 8.67249 0.440674C8.22739 0.440674 7.86657 0.801497 7.86657 1.24659V7.69396H1.4192C0.974104 7.69396 0.613281 8.05479 0.613281 8.49988C0.613281 8.94498 0.974104 9.3058 1.4192 9.3058H7.86657V15.7532C7.86657 16.1983 8.22739 16.5591 8.67249 16.5591C9.11759 16.5591 9.47841 16.1983 9.47841 15.7532V9.3058H15.9258C16.3709 9.3058 16.7317 8.94498 16.7317 8.49988C16.7317 8.05479 16.3709 7.69396 15.9258 7.69396H9.47841V1.24659Z' fill='white'/></svg>");
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 17px 17px;
+  cursor: pointer;
+}
+
+.TabNew:hover {
+  /* background-color: #d8dadd; */
+  background-color: rgba(77, 77, 77, 1);
+  /* background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path stroke='rgb(64, 64, 64)' stroke-linecap='square' stroke-width='1.5' d='M0 0 L8 8 M8 0 L0 8'></path></svg>"); */
+  /* background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path stroke='white' stroke-linecap='square' stroke-width='1.5' d='M0 4 L8 4 M4 0 L4 8'></path></svg>"); */
 }
 
 .TabClose {
+  opacity: 0;
+
   flex-grow: 0;
   flex-shrink: 0;
   position: relative;
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path stroke='rgb(64, 64, 64)' stroke-linecap='square' stroke-width='1.5' d='M0 0 L8 8 M8 0 L0 8'></path></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'><path stroke='rgb(255, 255, 255)' stroke-linecap='square' stroke-width='1.5' d='M0 0 L8 8 M8 0 L0 8'></path></svg>");
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 8px 8px;
   cursor: pointer;
-}
-
-.TabClose:hover {
-  background-color: #d8dadd;
 }
 
 .TabsBottomSpacer {
@@ -174,11 +244,12 @@
 
 .ToolbarButton {
   user-select: none;
-  padding: 0 8px;
+  padding: 4px 4px 0;
+  margin-top: 2px;
   line-height: 30px;
-  width: 30px;
-  height: 30px;
-  border-radius: 4px;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   color: #222;
   object-fit: contain;
   cursor: pointer;
@@ -188,7 +259,8 @@
 
 .ToolbarButton:hover,
 .ToolbarButton:active {
-  background: #eee;
+  background-color: rgba(77, 77, 77, 1);
+  /* background: #eee; */
 }
 
 .WindowsControls {

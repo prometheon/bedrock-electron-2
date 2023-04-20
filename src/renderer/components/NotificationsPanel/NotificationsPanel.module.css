@@ -1,4 +1,7 @@
 .NotificationsBar {
+  position: absolute;
+  right: 10px;
+  top: 10px;
   padding: 3px 2px 1px 2px;
   text-align: right;
 }

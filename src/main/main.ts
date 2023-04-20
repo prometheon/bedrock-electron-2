@@ -265,7 +265,7 @@ const createWindow = async () => {
     show: false,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'hidden',
-    trafficLightPosition: { x: 8, y: 14 },
+    trafficLightPosition: { x: 16, y: 22 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
@@ -354,6 +354,30 @@ const createWindow = async () => {
       lastTopBrowserView = browserViews[createdAt];
       menuBuilder?.setTopBrowserView(lastTopBrowserView);
       browserViews[createdAt].webContents.focus();
+    }
+  );
+
+  ipcMain.on(
+    'bedrock-event-showMenu',
+    (
+      _event,
+      {
+        createdAt,
+        x,
+        y,
+        type,
+      }: { createdAt: number; x: number; y: number; type: 'system' | 'tab' }
+    ) => {
+      if (!browserViews[createdAt]) {
+        console.log('browserView not found', createdAt);
+        return;
+      }
+
+      browserViews[createdAt].webContents.send('bedrock-event-showMenu', {
+        x,
+        y,
+        type,
+      });
     }
   );
 
