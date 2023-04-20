@@ -2,6 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const S3 = require('aws-sdk/clients/s3');
 
+const platform = process.argv[2];
+
 async function s3Upload() {
   const s3 = new S3({
     accessKeyId: process.env.AWS_ID_APP_DOWNLOADS_BUCKET,
@@ -24,8 +26,8 @@ async function s3Upload() {
 
   const targetFiles = fs
     .readdirSync(buildPath)
-    .filter(
-      (filename) => filename.endsWith('.exe') || filename.endsWith('.dmg')
+    .filter((filename) =>
+      filename.endsWith(platform === 'win' ? '.exe' : '.dmg')
     )
     .map((filename) => ({
       filename,

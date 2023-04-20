@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  publish_app:
+  publish_app_mac:
     runs-on: macos-latest
 
     steps:
@@ -30,10 +30,35 @@ jobs:
           USE_HARD_LINKS: false
         run: |
           pwd
-          yarn package
+          yarn package-mac
 
       - name: Upload App
-        run: yarn s3-upload
+        run: yarn s3-upload-mac
+        env:
+          AWS_ID_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_ID_APP_DOWNLOADS_BUCKET }}
+          AWS_SECRET_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_SECRET_APP_DOWNLOADS_BUCKET }}
+
+  publish_app_windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'yarn'
+
+      - run: yarn
+
+      - name: Package for Windows
+        run: |
+          yarn package-win
+
+      - name: Upload App
+        run: yarn s3-upload-win
         env:
           AWS_ID_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_ID_APP_DOWNLOADS_BUCKET }}
           AWS_SECRET_APP_DOWNLOADS_BUCKET: ${{ secrets.AWS_SECRET_APP_DOWNLOADS_BUCKET }}
