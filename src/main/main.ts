@@ -265,7 +265,7 @@ const createWindow = async () => {
     show: false,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'hidden',
-    trafficLightPosition: { x: 16, y: 22 },
+    trafficLightPosition: { x: 16, y: 16 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
