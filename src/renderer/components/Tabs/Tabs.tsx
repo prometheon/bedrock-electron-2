@@ -7,7 +7,7 @@ import minimizeIcon from './minimize.png';
 import maximizeIcon from './maximize.png';
 import restoreIcon from './restore.png';
 import closeIcon from './close.png';
-import bedrockLogoIcon from './bedrock-logo.png';
+import bedrockLogoIcon from './bedrock-logo.svg';
 import globeIcon from './globe.svg';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -37,47 +37,6 @@ function isBedrockTab(tab: Tab) {
   }
 
   return tab.url.includes('bedrock.computer') || tab.url.includes('localhost');
-}
-
-function TabGeometry() {
-  return (
-    <svg version="1.1" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <symbol id="tab-geometry-left" viewBox="0 0 314 36">
-          <path d="M17 0h297v36H0v-2c4.5 0 9-3.5 9-8V8c0-4.5 3.5-8 8-8z" />
-        </symbol>
-        <symbol id="tab-geometry-right" viewBox="0 0 314 36">
-          <use xlinkHref="#tab-geometry-left" />
-        </symbol>
-        <clipPath id="crop">
-          <rect
-            className={styles.TabGeometryMask}
-            width="100%"
-            height="100%"
-            x="0"
-          />
-        </clipPath>
-      </defs>
-      <svg width="52%" height="100%">
-        <use
-          xlinkHref="#tab-geometry-left"
-          width="314"
-          height="36"
-          className={styles.TabGeometryMaskPart}
-        />
-      </svg>
-      <g transform="scale(-1, 1)">
-        <svg width="52%" height="100%" x="-100%" y="0">
-          <use
-            xlinkHref="#tab-geometry-right"
-            width="314"
-            height="36"
-            className={styles.TabGeometryMaskPart}
-          />
-        </svg>
-      </g>
-    </svg>
-  );
 }
 
 function Tabs() {
@@ -175,7 +134,7 @@ function Tabs() {
         url: `${BASE_URL}/base`,
         icon: bedrockLogoIcon,
       },
-      { asFirstTab: true, asActiveTab: true }
+      { asFirstTab: false, asActiveTab: true }
     );
   }, [openTab]);
 
@@ -316,7 +275,34 @@ function Tabs() {
     }, 0);
   }, [tabs]);
 
+  const showTabMenu = useCallback((createdAt: number, x: number, y: number) => {
+    window.sendToElectron('bedrock-event-showMenu', {
+      createdAt,
+      x,
+      y,
+      type: 'tab',
+    });
+  }, []);
+
+  const showSystemMenu = useCallback(() => {
+    if (activeTab) {
+      window.sendToElectron('bedrock-event-showMenu', {
+        createdAt: activeTab.createdAt,
+        x: 0,
+        y: 0,
+        type: 'system',
+      });
+    }
+  }, [activeTab]);
+
   const onTabClick = (_event: MouseEvent, index: number) => {
+    if (activeTab?.createdAt === tabs[index].createdAt) {
+      const { x, y } = (
+        _event.currentTarget as HTMLDivElement
+      )?.getBoundingClientRect() || { x: 0, y: 0 };
+      showTabMenu(tabs[index].createdAt, x, y);
+      return;
+    }
     setActiveTab(tabs[index]);
   };
 
@@ -369,7 +355,7 @@ function Tabs() {
   }, [tabs]);
 
   const tabMaxWidth = useMemo(
-    () => `calc(${Math.min(100 / tabs.length, 22)}% + 1px)`,
+    () => `min(${100 / (tabs.length + 2)}%, 22%)`,
     [tabs]
   );
 
@@ -415,6 +401,10 @@ function Tabs() {
       if (Math.abs(deltaX) < MOUSE_MIN_MOVE_TO_DRAG) {
         return;
       }
+
+      window.sendToElectron('bedrock-event-draggingTab', {
+        createdAt: activeTab?.createdAt,
+      });
 
       deltaIndex = Math.round((elementX + deltaX) / elementWidth);
 
@@ -510,7 +500,7 @@ function Tabs() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [setTabs]);
+  }, [setTabs, activeTab?.createdAt]);
 
   return (
     <div ref={tabsRef}>
@@ -520,6 +510,14 @@ function Tabs() {
           window.platform.isMac ? styles.TabsPlatformMac : ''
         } ${window.platform.isWindows ? styles.TabsPlatformWindows : ''}`}
       >
+        <span onMouseDown={showSystemMenu}>
+          <img
+            className={styles.ToolbarButton}
+            src={bedrockLogoIcon}
+            title="Open Bedrock Base"
+            alt="Open Bedrock Base"
+          />
+        </span>
         {tabs.map((tab, index) =>
           tab ? (
             <div
@@ -539,10 +537,10 @@ function Tabs() {
               }}
               title={tab.title}
             >
-              <div className={styles.TabDividers} />
-              <TabGeometry />
+              {/* <div className={styles.TabDividers} /> */}
+              {/* <TabGeometry /> */}
 
-              {tab.icon && currentTabWidth > MIN_FULL_TAB_WIDTH ? (
+              {tab.icon ? (
                 <ReactImageFallback
                   src={tab.icon}
                   fallbackImage={globeIcon}
@@ -553,6 +551,12 @@ function Tabs() {
 
               {currentTabWidth > MIN_FULL_TAB_WIDTH ? (
                 <div className={styles.TabTitle}>{tab.title}</div>
+              ) : null}
+
+              {tab.createdAt === activeTab?.createdAt &&
+              isBedrockTab(tab) &&
+              tab.url.includes('b=') ? (
+                <div className={styles.TabChevron} />
               ) : null}
 
               {tabs.length > 1 ? (
@@ -569,14 +573,15 @@ function Tabs() {
             </div>
           ) : null
         )}
-        <span onClick={openBase}>
+        <div className={styles.TabNew} onClick={openBase} />
+        {/* <span onClick={openBase}>
           <img
             className={styles.ToolbarButton}
             src={bedrockLogoIcon}
             title="Open Bedrock Base"
             alt="Open Bedrock Base"
           />
-        </span>
+        </span> */}
       </div>
 
       <NotificationsPanel />
@@ -595,7 +600,7 @@ function Tabs() {
         </div>
       )}
 
-      <div className={styles.TabsBottomSpacer} />
+      {/* <div className={styles.TabsBottomSpacer} /> */}
     </div>
   );
 }
