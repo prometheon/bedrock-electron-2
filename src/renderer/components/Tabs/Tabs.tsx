@@ -402,6 +402,10 @@ function Tabs() {
         return;
       }
 
+      window.sendToElectron('bedrock-event-draggingTab', {
+        createdAt: activeTab?.createdAt,
+      });
+
       deltaIndex = Math.round((elementX + deltaX) / elementWidth);
 
       if (deltaIndex > 0) {
@@ -496,7 +500,7 @@ function Tabs() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
-  }, [setTabs]);
+  }, [setTabs, activeTab?.createdAt]);
 
   return (
     <div ref={tabsRef}>

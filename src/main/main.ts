@@ -357,13 +357,24 @@ const createWindow = async () => {
         const keyAsNumber = parseInt(key, 10);
         if (keyAsNumber !== createdAt) {
           browserViews[keyAsNumber].webContents.send(
-            'bedrock-event-blur',
+            'bedrock-event-hideMenus',
             null
           );
         }
       });
 
       browserViews[createdAt].webContents.focus();
+    }
+  );
+
+  ipcMain.on(
+    'bedrock-event-draggingTab',
+    (_event, { createdAt }: { createdAt: number; dragging: boolean }) => {
+      if (!browserViews[createdAt]) {
+        return;
+      }
+
+      browserViews[createdAt].webContents.send('bedrock-event-hideMenus', null);
     }
   );
 
