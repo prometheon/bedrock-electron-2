@@ -353,6 +353,16 @@ const createWindow = async () => {
       win?.setTopBrowserView(browserViews[createdAt]);
       lastTopBrowserView = browserViews[createdAt];
       menuBuilder?.setTopBrowserView(lastTopBrowserView);
+      Object.keys(browserViews).forEach((key) => {
+        const keyAsNumber = parseInt(key, 10);
+        if (keyAsNumber !== createdAt) {
+          browserViews[keyAsNumber].webContents.send(
+            'bedrock-event-blur',
+            null
+          );
+        }
+      });
+
       browserViews[createdAt].webContents.focus();
     }
   );
