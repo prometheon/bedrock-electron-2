@@ -142,7 +142,7 @@ class LocalFilesWatcher {
 
   private openLocalFile = (path: string) => {
     try {
-      const command = platform === 'win32' ? 'start' : 'open';
+      const command = platform === 'win32' ? 'start ""' : 'open';
       exec(`${command} "${path}"`);
 
       this.webContentsList.forEach((wc) => {
