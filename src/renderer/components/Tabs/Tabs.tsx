@@ -191,7 +191,7 @@ function Tabs() {
     };
 
     const onBedrockEventOpenTab = (_event: any, url: string) => {
-      openTab({ url });
+      openTab({ url }, { asActiveTab: true });
     };
 
     const onBedrockEventPageTitleUpdated = (
