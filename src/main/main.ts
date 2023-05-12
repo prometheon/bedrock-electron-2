@@ -15,7 +15,7 @@ import fs from 'fs';
 import os from 'os';
 import fetch from 'node-fetch';
 import { execSync } from 'child_process';
-import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
+import { app, BrowserWindow, ipcMain, BrowserView, dialog } from 'electron';
 import request from 'request';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -490,9 +490,10 @@ const createWindow = async () => {
 
       const command = [
         `hdiutil attach ${newAppVersionOutputPath}`,
-        `cp -r /Volumes/Bedrock\\ ${newVersionSummary?.version}${archPostFix}/Bedrock.app/ /Applications/Bedrock.app/`,
+        `rsync -av --progress --exclude 'Bedrock.app/Contents/MacOS/Bedrock' "/Volumes/Bedrock ${newVersionSummary?.version}${archPostFix}/Bedrock.app/" "/Applications/Bedrock.app/"`,
         `hdiutil unmount /Volumes/Bedrock\\ ${newVersionSummary?.version}${archPostFix}`,
         `rm -rf ${newAppVersionOutputPath}`,
+        `sleep 1`,
       ].join(' && ');
 
       try {
