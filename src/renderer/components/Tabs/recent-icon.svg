@@ -1,0 +1,13 @@
+<svg
+  width="13"
+  height="13"
+  viewBox="0 0 13 13"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  transform="translate(-1)"
+>
+  <path
+    d="M7 .61a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm-5 6a5 5 0 1 1 10 0 5 5 0 0 1-10 0Zm5.5-2.75a.5.5 0 1 0-1 0v3.25h3.25a.5.5 0 1 0 0-1H7.5V3.86Z"
+    fill="#fff"
+  />
+</svg>

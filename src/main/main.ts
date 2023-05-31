@@ -15,7 +15,7 @@ import fs from 'fs';
 import os from 'os';
 import fetch from 'node-fetch';
 import { execSync } from 'child_process';
-import { app, BrowserWindow, ipcMain, BrowserView, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, BrowserView } from 'electron';
 import request from 'request';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -398,6 +398,30 @@ const createWindow = async () => {
         x,
         y,
         type,
+      });
+    }
+  );
+
+  ipcMain.on('bedrock-event-showNavigationMenu', (_event, { createdAt }) => {
+    if (!browserViews[createdAt]) {
+      return;
+    }
+
+    browserViews[createdAt].webContents.send('bedrock-event-hideMenus', null);
+
+    browserViews[createdAt].webContents.send(
+      'bedrock-event-showNavigationMenu',
+      { createdAt }
+    );
+  });
+
+  ipcMain.on(
+    'bedrock-navigation-menu-data',
+    (_event, { icon, iconUrl, label }) => {
+      win?.webContents.send('bedrock-navigation-menu-data', {
+        icon,
+        iconUrl,
+        label,
       });
     }
   );
