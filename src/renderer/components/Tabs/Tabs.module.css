@@ -255,7 +255,7 @@
   color: #222;
   object-fit: contain;
   cursor: pointer;
-  margin-right: 16px;
+  margin-right: 8px;
   -webkit-app-region: none;
 }
 
@@ -263,6 +263,34 @@
 .ToolbarButton:active {
   background-color: rgba(77, 77, 77, 1);
   /* background: #eee; */
+}
+
+.NavigationDropdown {
+  padding: 8px 12px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  margin-right: 16px;
+}
+
+.NavigationDropdown:hover,
+.NavigationDropdown:active {
+  background-color: rgba(77, 77, 77, 1);
+}
+
+.NavigationDropdownImage {
+  user-select: none;
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+}
+
+.NavigationDropdownLabel {
+  text-transform: capitalize;
 }
 
 .WindowsControls {

@@ -9,6 +9,16 @@ import restoreIcon from './restore.png';
 import closeIcon from './close.png';
 import bedrockLogoIcon from './bedrock-logo.svg';
 import globeIcon from './globe.svg';
+import bedrockWhiteBlueLogoIcon from './bedrock-white-blue-logo.svg';
+import defaultDataspaceIcon from './default-dataspace-icon.svg';
+import draftDataspaceIcon from './draft-dataspace-icon.svg';
+import sharedDataspaceIcon from './shared-dataspace-icon.svg';
+import driveIcon from './drive-icon.svg';
+import figmaIcon from './figma-icon.svg';
+import localDirIcon from './local-dir-icon.svg';
+import recentIcon from './recent-icon.svg';
+import trashIcon from './trash-icon.svg';
+import searchIcon from './search-icon.svg';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
@@ -28,6 +38,25 @@ interface TabProps {
   title?: string;
   url?: string;
 }
+
+interface NavigationMenuData {
+  icon?: IconType;
+  iconUrl?: string;
+  label?: string;
+}
+type IconType = keyof typeof iconsMap;
+
+const iconsMap = {
+  defaultDataspace: defaultDataspaceIcon,
+  drafts: draftDataspaceIcon,
+  shared: sharedDataspaceIcon,
+  drive: driveIcon,
+  figma: figmaIcon,
+  localFiles: localDirIcon,
+  search: searchIcon,
+  recent: recentIcon,
+  trash: trashIcon,
+};
 
 const MIN_FULL_TAB_WIDTH = 72;
 
@@ -87,6 +116,8 @@ function Tabs() {
   );
 
   const [currentTabWidth, setCurrentTabWidth] = useState<number>(9999);
+
+  const [currentTabData, setCurrentTabData] = useState<NavigationMenuData>({});
 
   const openTab = useCallback(
     (
@@ -215,6 +246,18 @@ function Tabs() {
       findAndUpdateTab({ createdAt, url });
     };
 
+    const onBedrockNavigationMenuData = (
+      _event: Event,
+      data: NavigationMenuData
+    ) => {
+      if (
+        currentTabData?.label !== data?.label &&
+        (data?.icon || data?.iconUrl)
+      ) {
+        setCurrentTabData(data);
+      }
+    };
+
     window.addElectronListener('bedrock-event-signOut', onBedrockEventSignOut);
     window.addElectronListener('bedrock-event-openTab', onBedrockEventOpenTab);
     window.addElectronListener(
@@ -228,6 +271,10 @@ function Tabs() {
     window.addElectronListener(
       'bedrock-event-didNavigateInPage',
       onBedrockEventDidNavigateInPage
+    );
+    window.addElectronListener(
+      'bedrock-navigation-menu-data',
+      onBedrockNavigationMenuData
     );
 
     return () => {
@@ -255,8 +302,20 @@ function Tabs() {
         'bedrock-event-didNavigateInPage',
         onBedrockEventDidNavigateInPage
       );
+
+      window.removeElectronListener(
+        'bedrock-navigation-menu-data',
+        onBedrockNavigationMenuData
+      );
     };
-  }, [activeTab, findAndUpdateTab, openTab, setTabs, tabs]);
+  }, [
+    activeTab,
+    currentTabData?.label,
+    findAndUpdateTab,
+    openTab,
+    setTabs,
+    tabs,
+  ]);
 
   useEffect(() => {
     if (tabsRef.current) {
@@ -294,6 +353,24 @@ function Tabs() {
       });
     }
   }, [activeTab]);
+
+  const showNavigationMenu = useCallback(() => {
+    if (activeTab) {
+      window.sendToElectron('bedrock-event-showNavigationMenu', {
+        createdAt: activeTab.createdAt,
+      });
+    }
+  }, [activeTab]);
+
+  const currentNavigationMenuIcon = useMemo(() => {
+    if (currentTabData?.iconUrl) {
+      return currentTabData.iconUrl;
+    }
+    if (currentTabData?.icon) {
+      return iconsMap[currentTabData.icon];
+    }
+    return bedrockWhiteBlueLogoIcon;
+  }, [currentTabData]);
 
   const onTabClick = (_event: MouseEvent, index: number) => {
     if (activeTab?.createdAt === tabs[index].createdAt) {
@@ -517,6 +594,20 @@ function Tabs() {
             title="Open Bedrock Base"
             alt="Open Bedrock Base"
           />
+        </span>
+        <span
+          onMouseDown={showNavigationMenu}
+          className={styles.NavigationDropdown}
+        >
+          <img
+            className={styles.NavigationDropdownImage}
+            src={currentNavigationMenuIcon}
+            title="Open Navigation Menu"
+            alt="Open Navigation Menu"
+          />
+          <span className={styles.NavigationDropdownLabel}>
+            {currentTabData?.label || 'Bedrock'}
+          </span>
         </span>
         {tabs.map((tab, index) =>
           tab ? (
