@@ -267,6 +267,7 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       contextIsolation: false,
+      webviewTag: true,
     },
   });
   win.maximize();
@@ -278,6 +279,14 @@ const createWindow = async () => {
     }
     win.show();
     win.focus();
+  });
+
+  win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+    // Strip away preload scripts if unused or verify their location is legitimate
+    delete webPreferences.preload;
+
+    // Disable Node.js integration
+    webPreferences.nodeIntegration = false;
   });
 
   win.on('resize', () => {
