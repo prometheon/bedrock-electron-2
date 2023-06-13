@@ -135,7 +135,10 @@ async function checkVersion() {
 
   if (toNumberVersion(version) > toNumberVersion(releasePackage.version)) {
     newVersionSummary = { version, binaries };
-    win?.webContents.send('bedrock-event-newVersion', version);
+    win?.webContents.send(
+      'bedrock-event-newVersion',
+      `${version} ${process.arch}`
+    );
   }
 }
 

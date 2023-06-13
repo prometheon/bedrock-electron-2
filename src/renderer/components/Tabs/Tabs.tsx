@@ -427,10 +427,6 @@ function Tabs() {
     getWindow().close();
   };
 
-  const bedrockTabsCount = useMemo(() => {
-    return tabs.filter(isBedrockTab).length;
-  }, [tabs]);
-
   const tabMaxWidth = useMemo(
     () => `min(${100 / (tabs.length + 2)}%, 22%)`,
     [tabs]
@@ -665,14 +661,6 @@ function Tabs() {
           ) : null
         )}
         <div className={styles.TabNew} onClick={openBase} />
-        {/* <span onClick={openBase}>
-          <img
-            className={styles.ToolbarButton}
-            src={bedrockLogoIcon}
-            title="Open Bedrock Base"
-            alt="Open Bedrock Base"
-          />
-        </span> */}
       </div>
 
       <NotificationsPanel />
