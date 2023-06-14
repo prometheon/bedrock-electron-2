@@ -13,6 +13,7 @@ import {
   WIN_11_BOUNDS_OFFSET_MAXIMIZED,
   WIN_11_BOUNDS_OFFSET_NORMAL,
 } from '../constants';
+import eventEmitter from './events';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -236,6 +237,25 @@ export default class MenuBuilder {
       ],
     };
 
+    const subMenuFile: DarwinMenuItemConstructorOptions = {
+      label: 'File',
+      submenu: [
+        {
+          label: 'New Window',
+          accelerator: 'Command+N',
+          click: () => {
+            eventEmitter.emit('create-window');
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Close Window',
+          accelerator: 'Command+W',
+          selector: 'performClose:',
+        },
+      ],
+    };
+
     const subMenuEdit: DarwinMenuItemConstructorOptions = {
       label: 'Edit',
       submenu: [
@@ -300,7 +320,7 @@ export default class MenuBuilder {
       ],
     };
 
-    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow];
+    return [subMenuAbout, subMenuFile, subMenuEdit, subMenuView, subMenuWindow];
   }
 
   buildDefaultTemplate() {
