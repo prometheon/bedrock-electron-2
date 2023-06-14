@@ -159,7 +159,7 @@ export default class MenuBuilder {
       const menu: any[] = [];
 
       menu.push({
-        label: 'Open devTools for Tabs',
+        label: 'Open App DevTools',
         click: () => {
           win.webContents.openDevTools({ mode: 'detach' });
         },

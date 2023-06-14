@@ -22,14 +22,14 @@ import request from 'request';
 import progress from 'request-progress';
 import { Console } from 'console';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from '../utils/resolveHtmlPath';
+// import { resolveHtmlPath } from '../utils/resolveHtmlPath';
 import {
   WIN_10_BOUNDS_OFFSET_MAXIMIZED,
   WIN_10_BOUNDS_OFFSET_NORMAL,
   WIN_11_BOUNDS_OFFSET_MAXIMIZED,
   WIN_11_BOUNDS_OFFSET_NORMAL,
 } from '../constants';
-import BASE_URL from '../utils/base_url';
+// import BASE_URL from '../utils/base_url';
 import releasePackage from '../../release/app/package.json';
 import LocalFilesWatcher from '../utils/dirWatcher/LocalFilesWatcher';
 
@@ -69,16 +69,16 @@ if (
 
 require('@electron/remote/main').initialize();
 
-interface BrowserViewsMap {
-  [key: number]: BrowserView;
-}
+// interface BrowserViewsMap {
+//   [key: number]: BrowserView;
+// }
 
 let win: BrowserWindow | undefined;
 let newAppVersionOutputPath = '';
 const windows = new Set();
 let menuBuilder: MenuBuilder | undefined;
-const browserViews: BrowserViewsMap = {};
-let lastTopBrowserView: BrowserView | null = null;
+// const browserViews: BrowserViewsMap = {};
+// let lastTopBrowserView: BrowserView | null = null;
 let newVersionSummary: VersionSummary | null = null;
 const localFilesWatcher = new LocalFilesWatcher();
 
@@ -135,7 +135,10 @@ async function checkVersion() {
 
   if (toNumberVersion(version) > toNumberVersion(releasePackage.version)) {
     newVersionSummary = { version, binaries };
-    win?.webContents.send('bedrock-event-newVersion', version);
+    win?.webContents.send(
+      'bedrock-event-newVersion',
+      `${version} ${process.arch}`
+    );
   }
 }
 
@@ -148,132 +151,130 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  const createBrowserView = (
-    url: string,
-    {
-      createdAt = Date.now(),
-      show = false,
-    }: { createdAt?: number; show?: boolean } = {}
-  ) => {
-    if (!win) {
-      return;
-    }
+  // const createBrowserView = (
+  //   url: string,
+  //   {
+  //     createdAt = Date.now(),
+  //     show = false,
+  //   }: { createdAt?: number; show?: boolean } = {}
+  // ) => {
+  //   if (!win) {
+  //     return;
+  //   }
 
-    const isBedrockUrl =
-      url.includes('localhost') || url.includes('bedrock.computer');
+  //   const isBedrockUrl =
+  //     url.includes('localhost') || url.includes('bedrock.computer');
 
-    const webPreferences = isBedrockUrl
-      ? {
-          preload: path.join(__dirname, 'preload.js'),
-          nodeIntegration: true,
-          contextIsolation: false,
-          webviewTag: true,
-        }
-      : {};
+  //   const webPreferences = isBedrockUrl
+  //     ? {
+  //         preload: path.join(__dirname, 'preload.js'),
+  //         nodeIntegration: true,
+  //         contextIsolation: false,
+  //         webviewTag: true,
+  //       }
+  //     : {};
 
-    const browserView = new BrowserView({ webPreferences });
-    browserView.setBackgroundColor('#ffffff');
-    browserView.webContents.loadURL(url);
-    browserViews[createdAt] = browserView;
+  //   const browserView = new BrowserView({ webPreferences });
+  //   browserView.setBackgroundColor('#ffffff');
+  //   browserView.webContents.loadURL(url);
+  //   browserViews[createdAt] = browserView;
 
-    browserView.webContents.on(
-      'page-title-updated',
-      (_event: Event, title: string) => {
-        win?.webContents.send('bedrock-event-pageTitleUpdated', {
-          createdAt,
-          title,
-        });
-      }
-    );
+  //   browserView.webContents.on(
+  //     'page-title-updated',
+  //     (_event: Event, title: string) => {
+  //       win?.webContents.send('bedrock-event-pageTitleUpdated', {
+  //         createdAt,
+  //         title,
+  //       });
+  //     }
+  //   );
 
-    browserView.webContents.on(
-      'page-favicon-updated',
-      (_event: Event, favicons: string[]) => {
-        win?.webContents.send('bedrock-event-pageFaviconUpdated', {
-          createdAt,
-          icon: favicons[1] || favicons[0] || '',
-        });
-      }
-    );
+  //   browserView.webContents.on(
+  //     'page-favicon-updated',
+  //     (_event: Event, favicons: string[]) => {
+  //       win?.webContents.send('bedrock-event-pageFaviconUpdated', {
+  //         createdAt,
+  //         icon: favicons[1] || favicons[0] || '',
+  //       });
+  //     }
+  //   );
 
-    browserView.webContents.on(
-      'did-navigate-in-page',
-      (_event: Event, nextUrl: string) => {
-        win?.webContents.send('bedrock-event-didNavigateInPage', {
-          createdAt,
-          url: nextUrl,
-        });
-      }
-    );
+  //   browserView.webContents.on(
+  //     'did-navigate-in-page',
+  //     (_event: Event, nextUrl: string) => {
+  //       win?.webContents.send('bedrock-event-didNavigateInPage', {
+  //         createdAt,
+  //         url: nextUrl,
+  //       });
+  //     }
+  //   );
 
-    browserView.webContents.on(
-      'did-navigate',
-      (_event: Event, nextUrl: string, httpResponseCode: number) => {
-        if (
-          nextUrl &&
-          nextUrl.includes('/accounts/SetSID') &&
-          httpResponseCode === 400
-        ) {
-          // workaround of weird error with "Login with Google" leading to the broken page
-          // we do redirect only on second hit of this page, otherwise login will not be successful
-          browserView.webContents.loadURL(`${BASE_URL}/base`);
-        }
-      }
-    );
+  //   browserView.webContents.on(
+  //     'did-navigate',
+  //     (_event: Event, nextUrl: string, httpResponseCode: number) => {
+  //       if (
+  //         nextUrl &&
+  //         nextUrl.includes('/accounts/SetSID') &&
+  //         httpResponseCode === 400
+  //       ) {
+  //         // workaround of weird error with "Login with Google" leading to the broken page
+  //         // we do redirect only on second hit of this page, otherwise login will not be successful
+  //         browserView.webContents.loadURL(`${BASE_URL}/base`);
+  //       }
+  //     }
+  //   );
 
-    // browserView.webContents.on('did-finish-load', () => {
-    // });
+  //   browserView.webContents.on('destroyed', () => {
+  //     if (isBedrockUrl) {
+  //       localFilesWatcher.detachWebContents(browserView.webContents);
+  //     }
+  //   });
 
-    browserView.webContents.on('destroyed', () => {
-      if (isBedrockUrl) {
-        localFilesWatcher.detachWebContents(browserView.webContents);
-      }
-    });
+  //   win.addBrowserView(browserView);
+  //   if (isBedrockUrl) {
+  //     localFilesWatcher.attachWebContents(browserView.webContents);
+  //   }
 
-    win.addBrowserView(browserView);
-    if (isBedrockUrl) {
-      localFilesWatcher.attachWebContents(browserView.webContents);
-    }
+  //   if (show) {
+  //     lastTopBrowserView = browserView;
+  //     menuBuilder?.setTopBrowserView(lastTopBrowserView);
+  //     win.setTopBrowserView(browserView);
+  //   } else if (lastTopBrowserView) {
+  //     win.setTopBrowserView(lastTopBrowserView);
+  //   }
 
-    if (show) {
-      lastTopBrowserView = browserView;
-      menuBuilder?.setTopBrowserView(lastTopBrowserView);
-      win.setTopBrowserView(browserView);
-    } else if (lastTopBrowserView) {
-      win.setTopBrowserView(lastTopBrowserView);
-    }
+  //   menuBuilder = new MenuBuilder({
+  //     mainWindow: win,
+  //     mainView: lastTopBrowserView,
+  //   });
 
-    menuBuilder = new MenuBuilder({
-      mainWindow: win,
-      mainView: lastTopBrowserView,
-    });
+  //   setTimeout(() => {
+  //     if (!win) {
+  //       return;
+  //     }
 
-    setTimeout(() => {
-      if (!win) {
-        return;
-      }
-
-      // rebuild menu in few seconds, since some menu items are relying on settled page URL, that can be empty on the very start
-      menuBuilder = new MenuBuilder({
-        mainWindow: win,
-        mainView: lastTopBrowserView,
-      });
-    }, 5000);
-  };
+  //     // rebuild menu in few seconds, since some menu items are relying on settled page URL, that can be empty on the very start
+  //     menuBuilder = new MenuBuilder({
+  //       mainWindow: win,
+  //       mainView: lastTopBrowserView,
+  //     });
+  //   }, 5000);
+  // };
 
   win = new BrowserWindow({
     show: false,
     icon: getAssetPath('icon.png'),
     titleBarStyle: 'hidden',
-    trafficLightPosition: { x: 16, y: 16 },
+    trafficLightPosition: { x: 13, y: 10 },
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true,
       contextIsolation: false,
+      webviewTag: true,
     },
   });
   win.maximize();
-  win.loadURL(resolveHtmlPath('index.html'));
+  win.loadURL(process.env.BASE_URL);
 
   win.webContents.on('did-finish-load', () => {
     if (!win) {
@@ -281,6 +282,14 @@ const createWindow = async () => {
     }
     win.show();
     win.focus();
+  });
+
+  win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
+    // Strip away preload scripts if unused or verify their location is legitimate
+    delete webPreferences.preload;
+
+    // Disable Node.js integration
+    webPreferences.nodeIntegration = false;
   });
 
   win.on('resize', () => {
@@ -295,7 +304,7 @@ const createWindow = async () => {
   win.on('closed', () => {
     windows.delete(win);
     win = undefined;
-    lastTopBrowserView = null;
+    // lastTopBrowserView = null;
   });
 
   win.on('show', () => {
@@ -311,12 +320,12 @@ const createWindow = async () => {
     if (focusedWindow) {
       menuBuilder = new MenuBuilder({
         mainWindow: focusedWindow,
-        mainView: lastTopBrowserView,
+        // mainView: lastTopBrowserView,
       });
 
-      setTimeout(() => {
-        lastTopBrowserView?.webContents.focus();
-      }, 200);
+      // setTimeout(() => {
+      //   lastTopBrowserView?.webContents.focus();
+      // }, 200);
     }
   });
 
@@ -328,88 +337,92 @@ const createWindow = async () => {
     win?.webContents.send('bedrock-event-signOut');
   });
 
-  ipcMain.on(
-    'bedrock-event-createBrowserView',
-    (
-      _event,
-      {
-        url,
-        createdAt,
-        show = false,
-      }: { url: string; createdAt: number; show?: boolean }
-    ) => {
-      createBrowserView(url, { createdAt, show });
-    }
-  );
+  // ipcMain.on(
+  //   'bedrock-event-createBrowserView',
+  //   (
+  //     _event,
+  //     {
+  //       url,
+  //       createdAt,
+  //       show = false,
+  //     }: { url: string; createdAt: number; show?: boolean }
+  //   ) => {
+  //     createBrowserView(url, { createdAt, show });
+  //   }
+  // );
 
-  ipcMain.on(
-    'bedrock-event-activateBrowserView',
-    (_event, { createdAt }: { createdAt: number }) => {
-      if (!browserViews[createdAt]) {
-        return;
-      }
+  // ipcMain.on(
+  //   'bedrock-event-activateBrowserView',
+  //   (_event, { createdAt }: { createdAt: number }) => {
+  //     if (!browserViews[createdAt]) {
+  //       return;
+  //     }
 
-      win?.addBrowserView(browserViews[createdAt]);
-      win?.setTopBrowserView(browserViews[createdAt]);
-      lastTopBrowserView = browserViews[createdAt];
-      menuBuilder?.setTopBrowserView(lastTopBrowserView);
-      Object.keys(browserViews).forEach((key) => {
-        const keyAsNumber = parseInt(key, 10);
-        if (keyAsNumber !== createdAt) {
-          browserViews[keyAsNumber].webContents.send(
-            'bedrock-event-hideMenus',
-            null
-          );
-        }
-      });
+  //     win?.addBrowserView(browserViews[createdAt]);
+  //     win?.setTopBrowserView(browserViews[createdAt]);
+  //     lastTopBrowserView = browserViews[createdAt];
+  //     menuBuilder?.setTopBrowserView(lastTopBrowserView);
+  //     Object.keys(browserViews).forEach((key) => {
+  //       const keyAsNumber = parseInt(key, 10);
+  //       if (keyAsNumber !== createdAt) {
+  //         browserViews[keyAsNumber].webContents.send(
+  //           'bedrock-event-hideMenus',
+  //           null
+  //         );
+  //       }
+  //     });
 
-      browserViews[createdAt].webContents.focus();
-    }
-  );
+  //     browserViews[createdAt].webContents.focus();
+  //   }
+  // );
 
-  ipcMain.on(
-    'bedrock-event-draggingTab',
-    (_event, { createdAt }: { createdAt: number; dragging: boolean }) => {
-      if (!browserViews[createdAt]) {
-        return;
-      }
+  // ipcMain.on(
+  //   'bedrock-event-draggingTab',
+  //   (_event, { createdAt }: { createdAt: number; dragging: boolean }) => {
+  //     if (!browserViews[createdAt]) {
+  //       return;
+  //     }
 
-      browserViews[createdAt].webContents.send('bedrock-event-hideMenus', null);
-    }
-  );
+  //     browserViews[createdAt].webContents.send('bedrock-event-hideMenus', null);
+  //   }
+  // );
 
-  ipcMain.on(
-    'bedrock-event-showMenu',
-    (
-      _event,
-      {
-        createdAt,
-        x,
-        y,
-        type,
-      }: { createdAt: number; x: number; y: number; type: 'system' | 'tab' }
-    ) => {
-      if (!browserViews[createdAt]) {
-        console.log('browserView not found', createdAt);
-        return;
-      }
+  // ipcMain.on(
+  //   'bedrock-event-showMenu',
+  //   (
+  //     _event,
+  //     {
+  //       createdAt,
+  //       x,
+  //       y,
+  //       type,
+  //     }: { createdAt: number; x: number; y: number; type: 'system' | 'tab' }
+  //   ) => {
+  //     if (!win) return;
+  //     // if (!browserViews[createdAt]) {
+  //     //   console.log('browserView not found', createdAt);
+  //     //   return;
+  //     // }
 
-      browserViews[createdAt].webContents.send('bedrock-event-showMenu', {
-        x,
-        y,
-        type,
-      });
-    }
-  );
+  //     win.webContents.send('bedrock-event-showMenu', {
+  //       x,
+  //       y,
+  //       type,
+  //     });
+  //   }
+  // );
 
   ipcMain.on('bedrock-event-showNavigationMenu', (_event, { createdAt }) => {
-    if (!browserViews[createdAt]) {
-      return;
-    }
+    if (!win) return;
+    // if (!browserViews[createdAt]) {
+    //   return;
+    // }
 
-    browserViews[createdAt].webContents.send('bedrock-event-hideMenus', null);
+    win.webContents.send('bedrock-event-hideMenus', null);
+    // browserViews[createdAt].webContents.send('bedrock-event-hideMenus', null);
 
-    browserViews[createdAt].webContents.send(
+    win.webContents.send(
+      // browserViews[createdAt].webContents.send(
       'bedrock-event-showNavigationMenu',
       { createdAt }
     );
@@ -426,35 +439,35 @@ const createWindow = async () => {
     }
   );
 
-  ipcMain.on(
-    'bedrock-event-removeBrowserView',
-    (
-      _event,
-      {
-        createdAt,
-        nextCreatedAt,
-      }: { createdAt: number; nextCreatedAt: number | null }
-    ) => {
-      if (!browserViews[createdAt]) {
-        return;
-      }
+  // ipcMain.on(
+  //   'bedrock-event-removeBrowserView',
+  //   (
+  //     _event,
+  //     {
+  //       createdAt,
+  //       nextCreatedAt,
+  //     }: { createdAt: number; nextCreatedAt: number | null }
+  //   ) => {
+  //     if (!browserViews[createdAt]) {
+  //       return;
+  //     }
 
-      if (nextCreatedAt && browserViews[nextCreatedAt]) {
-        win?.addBrowserView(browserViews[nextCreatedAt]);
-        win?.setTopBrowserView(browserViews[nextCreatedAt]);
-        lastTopBrowserView = browserViews[nextCreatedAt];
-        menuBuilder?.setTopBrowserView(lastTopBrowserView);
-      }
+  //     if (nextCreatedAt && browserViews[nextCreatedAt]) {
+  //       win?.addBrowserView(browserViews[nextCreatedAt]);
+  //       win?.setTopBrowserView(browserViews[nextCreatedAt]);
+  //       lastTopBrowserView = browserViews[nextCreatedAt];
+  //       menuBuilder?.setTopBrowserView(lastTopBrowserView);
+  //     }
 
-      win?.removeBrowserView(browserViews[createdAt]);
-      if (lastTopBrowserView === browserViews[createdAt]) {
-        lastTopBrowserView = null;
-        menuBuilder?.setTopBrowserView(null);
-      }
-      (browserViews[createdAt].webContents as any).destroy();
-      delete browserViews[createdAt];
-    }
-  );
+  //     win?.removeBrowserView(browserViews[createdAt]);
+  //     if (lastTopBrowserView === browserViews[createdAt]) {
+  //       lastTopBrowserView = null;
+  //       menuBuilder?.setTopBrowserView(null);
+  //     }
+  //     (browserViews[createdAt].webContents as any).destroy();
+  //     delete browserViews[createdAt];
+  //   }
+  // );
 
   ipcMain.on('bedrock-event-startNewVersionDownload', async () => {
     if (!newVersionSummary) {

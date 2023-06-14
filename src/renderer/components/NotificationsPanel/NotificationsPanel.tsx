@@ -1,5 +1,7 @@
 // eslint-disable no-nested-ternary
 
+// Moved to UpdateButton in React app
+
 import { useCallback, useEffect, useState } from 'react';
 import platformOS from 'platform-detect/os.mjs';
 import styles from './NotificationsPanel.module.css';
