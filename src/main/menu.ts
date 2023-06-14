@@ -24,20 +24,20 @@ let menuBuilderInstance: MenuBuilder;
 export default class MenuBuilder {
   mainWindow: BrowserWindow;
 
-  mainView?: BrowserView | null;
+  // mainView?: BrowserView | null;
 
   onDestroy?: () => void;
 
   constructor({
     mainWindow,
-    mainView,
-  }: {
+  }: // mainView,
+  {
     prevInstance?: MenuBuilder | null;
     mainWindow: BrowserWindow;
-    mainView?: BrowserView | null;
+    // mainView?: BrowserView | null;
   }) {
     this.buildMenu = this.buildMenu.bind(this);
-    this.setTopBrowserView = this.setTopBrowserView.bind(this);
+    // this.setTopBrowserView = this.setTopBrowserView.bind(this);
     this.reloadPageAction = this.reloadPageAction.bind(this);
     this.toggleDevToolsAction = this.toggleDevToolsAction.bind(this);
     this.goHomeAction = this.goHomeAction.bind(this);
@@ -50,7 +50,7 @@ export default class MenuBuilder {
     }
 
     this.mainWindow = mainWindow;
-    this.mainView = mainView;
+    // this.mainView = mainView;
 
     this.buildMenu();
 
@@ -72,20 +72,20 @@ export default class MenuBuilder {
     return menu;
   }
 
-  setTopBrowserView(mainView?: BrowserView | null) {
-    this.mainView = mainView;
-  }
+  // setTopBrowserView(mainView?: BrowserView | null) {
+  //   this.mainView = mainView;
+  // }
 
   reloadPageAction() {
-    this.mainView?.webContents?.reload();
+    this.mainWindow?.webContents?.reload();
   }
 
   toggleDevToolsAction() {
-    this.mainView?.webContents?.toggleDevTools();
+    this.mainWindow?.webContents?.toggleDevTools();
   }
 
   goHomeAction() {
-    this.mainView?.webContents.loadURL(`${BASE_URL}/base`);
+    this.mainWindow?.webContents.loadURL(`${BASE_URL}/base`);
   }
 
   toggleFullScreenAction() {
