@@ -32,6 +32,7 @@ import {
 // import BASE_URL from '../utils/base_url';
 import releasePackage from '../../release/app/package.json';
 import LocalFilesWatcher from '../utils/dirWatcher/LocalFilesWatcher';
+import eventEmitter from './events';
 
 if (!fs.existsSync(`${app.getPath('home')}/.bedrock`)) {
   fs.mkdirSync(`${app.getPath('home')}/.bedrock`);
@@ -284,13 +285,16 @@ const createWindow = async () => {
     win.focus();
   });
 
-  win.webContents.on('will-attach-webview', (event, webPreferences, params) => {
-    // Strip away preload scripts if unused or verify their location is legitimate
-    delete webPreferences.preload;
+  win.webContents.on(
+    'will-attach-webview',
+    (_event, webPreferences, _params) => {
+      // Strip away preload scripts if unused or verify their location is legitimate
+      delete webPreferences.preload;
 
-    // Disable Node.js integration
-    webPreferences.nodeIntegration = false;
-  });
+      // Disable Node.js integration
+      webPreferences.nodeIntegration = false;
+    }
+  );
 
   win.on('resize', () => {
     if (win) {
@@ -646,4 +650,8 @@ ipcMain.on('uncaughtException', (error) => {
   // Handle the error
   mainLogger.error(`Bedrock main process error: `, error);
   console.error(`Bedrock main process error: `, error);
+});
+
+eventEmitter.on('create-window', () => {
+  createWindow();
 });
