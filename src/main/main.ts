@@ -301,6 +301,8 @@ const createWindow = async () => {
     }
   );
 
+  localFilesWatcher.attachWebContents(win.webContents);
+
   win.on('resize', () => {
     if (win) {
       // set BrowserView's bounds explicitly
